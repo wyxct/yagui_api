@@ -1,0 +1,196 @@
+{
+	"info": {
+		"_postman_id": "4707096a-5d4a-4290-a582-661c4581bafb",
+		"name": "corntask",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "重新加载",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}tasks/reload/",
+					"host": [
+						"{{baseurl}}tasks"
+					],
+					"path": [
+						"reload",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "开始任务",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"cron\" :\"0/8 * * * * * *\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseurl}}tasks/send_order/start/",
+					"host": [
+						"{{baseurl}}tasks"
+					],
+					"path": [
+						"send_order",
+						"start",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "暂停任务",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"cron\" :\"0/8 * * * * * *\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseurl}}tasks/send_order/pause/",
+					"host": [
+						"{{baseurl}}tasks"
+					],
+					"path": [
+						"send_order",
+						"pause",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "恢复任务",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"cron\" :\"0/8 * * * * * *\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseurl}}tasks/A_job/resume/",
+					"host": [
+						"{{baseurl}}tasks"
+					],
+					"path": [
+						"A_job",
+						"resume",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查询任务列表",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseurl}}tasks/",
+					"host": [
+						"{{baseurl}}tasks"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查询任务状态",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": ""
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查询任务结果",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"cron\" :\"0/2 * * * * * *\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseurl}}tasks/send_order/results/",
+					"host": [
+						"{{baseurl}}tasks"
+					],
+					"path": [
+						"send_order",
+						"results",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseurl",
+			"value": "127.0.0.1:8000/api/"
+		}
+	]
+}

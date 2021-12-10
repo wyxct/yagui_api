@@ -1,0 +1,94 @@
+
+{
+
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s [%(levelname)s] [%(threadName)s] [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] - %(message)s"
+        },
+        "simple": {
+            "format": "%(asctime)s [%(levelname)s] [%(name)s:%(lineno)d] %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose"
+        },
+        "pfile": {
+            "level": "INFO",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "./logs/fs.log",
+            "when": "midnight",
+            "formatter": "verbose",
+            "interval": 1,
+            "backupCount": 30
+        },
+        "papi": {
+            "level": "INFO",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "./logs/api.log",
+            "when": "midnight",
+            "formatter": "verbose",
+            "interval": 1,
+            "backupCount": 30
+        },
+        "pcrontemplate": {
+            "level": "INFO",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "./logs/crontemplate.log",
+            "when": "midnight",
+            "formatter": "verbose",
+            "interval": 1,
+            "backupCount": 30
+        },
+        "src.corntask.apscheduler_core": {
+            "level": "INFO",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "./logs/apscheduler.log",
+            "when": "midnight",
+            "formatter": "verbose",
+            "interval": 1,
+            "backupCount": 30
+        },
+        "http": {
+            "level": "ERROR",
+            "class": "logging.handlers.HTTPHandler",
+            "host": "127.0.0.1:4444",
+            "url": "/api/p2ptasks/",
+            "method": "POST",
+            "formatter": "verbose"
+
+        }
+    },
+    "loggers": {
+        "flask": {
+            "handlers": ["console", "pfile"],
+            "level": "DEBUG",
+            "propagate": true
+        },
+        "api": {
+            "handlers": ["console", "papi"],
+            "level": "DEBUG",
+            "propagate": true
+        },
+        "crontemplate": {
+            "handlers": ["console", "pcrontemplate"],
+            "level": "DEBUG",
+            "propagate": true
+        },
+        "src.corntask.apscheduler_core": {
+            "handlers": ["console", "src.corntask.apscheduler_core","http"],
+            "level": "DEBUG",
+            "propagate": true
+        },
+        "main.sub": {
+            "handlers": ["console", "pfile"],
+            "level": "DEBUG",
+            "propagate": true
+        }
+    }
+    
+}

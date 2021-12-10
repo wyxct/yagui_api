@@ -1,0 +1,44 @@
+1、fork仿真车载配置：ssio-enable配置为1（1开启ssio交互、0关闭ssio交互）【重载车测试方法与fork车一致】
+     ants仿真车载配置：ssio配置为1（1开启ssio交互、0关闭ssio交互）
+     picking仿真车配置：io下ex开头配置为1
+2、fork docks.xml文件配置，插曲托盘的dock点需要配置：<p8>do</p8>  、<p9>di</p9>
+     ants docks.xml文件配置，插曲托盘的dock点需要配置：<p6>配置100以上（车载dock距离）</p6> <p7>do</p7>  、<p8>di</p8>
+     picking  docks.xml文件配置，插曲托盘的dock点需要配置：<p14>di</p14>  、<p15>do</p15>
+3、数据库配置：
+   1）io表添加两行数据：nanme  io_type_id  description
+                                     do              2          output
+                                     di               1          intput
+   
+    2)io_type表添加两行数据:  id      name
+                                           1        Input
+                                           2      Output
+   3) io_state表添加两行数据：io_id     io_status_id
+                                               1            0
+                                               1           0
+仿真agv到达dock点前申请io，手动修改第二行io_status_id的值（对比第一行+1），连续申请三次任务才算完成
+
+
+取卸货任务交互流程：
+ 11  请求进库位 do
+ 12  外设同意进库位 di
+ 13  请求动作 do
+ 14  外设同意动作 di
+ 15  请求离开
+ 16  外设同意离开
+
+2 请求开门
+4 开门到位
+3 请求关门
+5 关门到位
+
+入库
+12
+13发14不读
+15发16不读
+
+出库
+11，12不对外发请求
+13发14不读
+15发16不读
+
+2,3,

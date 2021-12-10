@@ -1,0 +1,1 @@
+sqlacodegen --noviews --outfile ./model.py postgresql://postgres:admin@127.0.0.1:5432/longji0628

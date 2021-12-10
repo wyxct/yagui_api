@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>任务列表</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap -->
+    <link href="static/css/bootstrap.css" rel="stylesheet">
+    <link href="static/css/bootstrap-table.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/index.css">
+    <link rel="stylesheet" href="static/css/font-awesome.min.css">
+  </head>
+  <body>
+    <div id = navbar></div>
+     <!-- 模态框（Modal） -->
+    <div class="modal fade" id="qtyModal" tabindex="-1" role="dialog" aria-labelledby="qtyModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">修改时间</h4>
+            </div>
+            <div class="modal-body">
+           	<div class="input-group">
+                <span class="input-group-btn">
+                    <label>任务编号:</label>                   
+                </span>
+                <input type="text" id = "tx_task_no" class="form-control no-padding add-color text-center height-25">
+            </div>		
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <label>触发参数:</label>                   
+                </span>
+                <input type="text" id = "tx_ptr" class="form-control no-padding add-color text-center height-25">
+            </div>
+            
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>关闭</button>
+                <button type="button" id="btn_submit" class="btn btn-primary" data-dismiss="modal" onClick="updateptr()"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>保存</button>
+            </div>
+            </div>
+    </div>
+    </div>
+    </div>
+    <div class="container">
+        <div>
+          <div class="col-2">
+          </div>
+          <div>
+              <div id="toolbar-fluid" style = margin-top:15px > 
+                <button type = "button" id="reload" class="btn btn-bg btn-info" onclick="reloadtask()">重新加载</button>              
+                
+              </div>
+			<table id="table" style="margin:0px auto;border:1px solid #dddddd;"></table>
+          </div>
+          <div class="col-2">
+          </div>
+        </div>
+    </div>
+
+
+    <script src="static/js/public/jquery3.3.1.js"></script>
+    <script src="static/js/public/bootstrap.js"></script>
+    <script src="static/js/public/bootstrap-table.js"></script>
+    <script src="static/js/public/bootstrap-table-zh-CN.js"></script>
+	    <script>
+     //刷新bootstrap-table
+	  function refreshData() {
+    	$("#table").bootstrapTable('refresh',{
+    		
+
+    	});
+    }
+ </script>
+    <script src="static/js/src/task.js"></script>
+
+  </body>
+</html>
