@@ -72,7 +72,7 @@ class report_finished():
             completelist = []
             #处理未发送成功的
             pos = re.sub('\(.*?\)','',row.current_destination)
-            data ={"TaskId":row.order_name,"UserId":"agvsystem","ToLoc":pos,"ex":json.loads(taskdict[row.order_name].ex) if taskdict[row.order_name].ex is not None else None,"IP":"","ClientName":""}
+            data ={"TaskId":row.order_name,"UserId":"monitoring_order","ToLoc":pos,"ex":json.loads(taskdict[row.order_name].ex) if taskdict[row.order_name].ex is not None else None,"IP":"","ClientName":""}
             completelist.append(data)
   
             logger.info({"data":completelist})
