@@ -95,8 +95,7 @@ def get_data_sync(slave_no:str,data:list,checkaddr = True):
     res_data ={}
 
     try:
-        for key in data:
-        #print((master.execute(slave=1, function_code=md.READ_HOLDING_REGISTERS , starting_address=5010, quantity_of_x=1)))          
+        for key in data:          
             Hold_value = master.execute(slave=cfg["id"], function_code=md.READ_HOLDING_REGISTERS , starting_address=key, quantity_of_x=1)
             res_data[key] = Hold_value[0]
 
@@ -106,19 +105,58 @@ def get_data_sync(slave_no:str,data:list,checkaddr = True):
         return False,"读取失败"
     return True,res_data
 
+
+def mtexcute(ip,port,slave,func_code,addr,qty =1,vallist=0):
+    '''
+    #modbus exception codes
+    ILLEGAL_FUNCTION = 1
+    ILLEGAL_DATA_ADDRESS = 2
+    ILLEGAL_DATA_VALUE = 3
+    SLAVE_DEVICE_FAILURE = 4
+    COMMAND_ACKNOWLEDGE = 5
+    SLAVE_DEVICE_BUSY = 6
+    MEMORY_PARITY_ERROR = 8
+
+    #supported modbus functions
+    READ_COILS = 1
+    READ_DISCRETE_INPUTS = 2
+    READ_HOLDING_REGISTERS = 3
+    READ_INPUT_REGISTERS = 4
+    WRITE_SINGLE_COIL = 5
+    WRITE_SINGLE_REGISTER = 6
+    READ_EXCEPTION_STATUS = 7
+    DIAGNOSTIC = 8
+    REPORT_SLAVE_ID = 17
+    WRITE_MULTIPLE_COILS = 15
+    WRITE_MULTIPLE_REGISTERS = 16
+    READ_WRITE_MULTIPLE_REGISTERS = 23
+    DEVICE_INFO = 43
+
+    #supported block types
+    COILS = 1
+    DISCRETE_INPUTS = 2
+    HOLDING_REGISTERS = 3
+    ANALOG_INPUTS = 4
+    '''
+    master = mt.TcpMaster(ip, port)
+    master.set_timeout(5)         
+    if  vallist is None:
+        vallist = 0
+    Hold_value = master.execute(slave=slave, function_code=func_code, starting_address=addr, quantity_of_x=qty,output_value=vallist)
+    return Hold_value
+
 cnt = 1
 import  time
 def get_string_sync(slave_no:str,data:list):
     flag,err= check_ptr(slave_no,data)
-    '''
-    if isinstance(modbus_cfg[slave_no]["addrs"],dict):
-        data = data.values()
-    '''
+
     if flag == False:
         return flag,err
     cfg = modbus_cfg[slave_no]
-    test = 1
 
+    master = mt.TcpMaster(cfg["ip"], cfg["port"])
+    master.set_timeout(cfg["time_out"])       
+    test = 1
 
     global cnt
     start = time.time()
@@ -132,7 +170,45 @@ def get_string_sync(slave_no:str,data:list):
         return False,"unready"
     else:
         return False,"error"
+    Hold_value = mk.master.execute(slave=1, function_code=md.READ_INPUT_REGISTERS, starting_address=00, quantity_of_x=27)
+    
+    print(Hold_value)
+    #转码
+    dd = str(bytearray(Hold_value))
+    print(dd)
 
+
+def get_string_batch(slave_no:str):
+    '''
+    flag,err= check_ptr(slave_no,["r_state","r_batch"])
+
+    if flag == False:
+        return flag,err
+    '''
+    cfg = modbus_cfg[slave_no]
+
+    master = mt.TcpMaster(cfg["ip"], cfg["port"])
+    master.set_timeout(cfg["time_out"])   
+
+    try:
+        state_value = master.execute(slave=cfg["id"], function_code=md.READ_INPUT_REGISTERS, starting_address=cfg["addrs"]["r_state"], quantity_of_x=cfg["state_len"])
+        Hold_value = master.execute(slave=cfg["id"], function_code=md.READ_INPUT_REGISTERS, starting_address=cfg["addrs"]["r_batch"], quantity_of_x=cfg["batch_len"])
+    except Exception as  e: 
+        logging.error("get_string_batch")
+        logging.error(e) 
+        return False,None
+   
+    if state_value == 1:
+        batch = None
+        if Hold_value is not None:
+            batch = bytearray(Hold_value).decode('utf-8')
+        return True,batch
+    elif state_value == 2:
+        return False,"unready"
+    else:
+        #batch = str(bytearray(Hold_value))
+        batch = bytearray(Hold_value).decode('utf-8')
+        return False,batch
 
 class modbus_request:
     logger = logging.getLogger("main.sub.mobus_request")
@@ -186,6 +262,8 @@ class modbus_request:
             return None
         return Hold_value
     
+
+
     def setMultValue(self,slave,addr,qty,vallist):
         
         try:
@@ -226,11 +304,9 @@ if __name__ == "__main__":
     mk = modbus_request()
     mk.connect()
 
-    cc = mk.getOnePosStatus("1canload")            
-    #dd = mk.setOnePosValue("2canload",1)
-    print(cc)
     Hold_value = mk.master.execute(slave=1, function_code=md.READ_INPUT_REGISTERS, starting_address=00, quantity_of_x=27)
     
     print(Hold_value)
+    #转码
     dd = str(bytearray(Hold_value))
     print(dd)
