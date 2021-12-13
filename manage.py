@@ -8,7 +8,7 @@ from src.app import create_app
 #from flask_apidoc import ApiDoc
 import os
 
-from flask import render_template,send_from_directory
+from flask import render_template
 
 def run(model):
     args = 'flask-sqlacodegen --flask --schema {} --outfile ./src/base/models/{}_model.py postgresql://postgres:admin@127.0.0.1:5432/longji0628'.format(
@@ -19,7 +19,6 @@ if __name__ == '__main__':
     app = create_app()
     
     from src.corntask.sql_manager import *
-    #from pymssql import _mssql, _pymssql
     import uuid, decimal
     from src.settings import Database
     sql_sentence = 'select 1'

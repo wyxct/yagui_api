@@ -6,19 +6,18 @@
     },
     "db":{
         "postgresql":{
-            "type":"postgresql",
-            "HOST":"127.0.0.1",
+            "HOST":"10.10.100.32",
             "PORT":"5432",
-            "DATABASE":"longjiqiepian",
+            "DATABASE":"qilushihua",
             "USERNAME":"postgres",
-            "PASSWORD":"admin"
+            "PASSWORD":"123456"
         },
         "sqlserver":{
-            "HOST":"10.10.90.84",
+            "HOST":"10.10.90.87",
             "PORT":"5432",
-            "DATABASE":"iWMS_TEST",
-            "USERNAME":"sa",
-            "PASSWORD":"wms@123"
+            "DATABASE":"qilushihua",
+            "USERNAME":"postgres",
+            "PASSWORD":"123"
         }
 
     },
@@ -40,7 +39,7 @@
         "I_URI":"{host}:{port}/api/om/interaction_info/find_by_type/",
         "C_URI":"{host}:{port}/api/om/interaction_info/update/"
     },
-    "area_map":{"B01": "http://10.10.100.32:8501"},
+    "area_map":{"B01": "http://10.10.100.28:8500"},
     "appserver":{
         "HOST":"http://10.10.90.84",
         "PORT":"4000",
@@ -58,9 +57,11 @@
         "inloc1":
             {
                 "ip":"127.0.0.1",
-                "port":503,
+                "port":502,
                 "id":1,
-                "addrs":{"r_batch":5009},
+                "addrs":{"r_batch":0,"r_state":0},
+                "batch_len":27,
+                "state_len":1,
                 "time_out":5
             },
         "inloc2":
@@ -71,7 +72,7 @@
                 "addrs":{"r_batch":5009},
                 "time_out":5
             },
-            "inloc3":
+        "inloc3":
             {
                 "ip":"127.0.0.1",
                 "port":502,
@@ -79,7 +80,7 @@
                 "addrs":{"r_batch":5009},
                 "time_out":5
             },
-            "inloc4":
+        "inloc4":
             {
                 "ip":"127.0.0.1",
                 "port":502,

@@ -90,7 +90,7 @@ class SchedulerManage(object):
 #        from ..app import create_app
         from ..settings import Database
         #self.engine = create_engine('postgresql://postgres:admin@127.0.0.1:5432/longji0628')
-        self.engine = create_engine(Database.postgresql.DB_URI, echo=False)
+        self.engine = create_engine(Database.postgresql.DB_URI, echo=True)
         self.SessionFactory = sessionmaker(bind=self.engine)
         
 
