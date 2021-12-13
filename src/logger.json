@@ -17,28 +17,28 @@
             "class": "logging.StreamHandler",
             "formatter": "verbose"
         },
-        "pfile": {
+        "file": {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./logs/fs.log",
+            "filename": "./log/fs.log",
             "when": "midnight",
             "formatter": "verbose",
             "interval": 1,
             "backupCount": 30
         },
-        "papi": {
+        "api": {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./logs/api.log",
+            "filename": "./log/api.log",
             "when": "midnight",
             "formatter": "verbose",
             "interval": 1,
             "backupCount": 30
         },
-        "pcrontemplate": {
+        "crontemplate": {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./logs/crontemplate.log",
+            "filename": "./log/crontemplate.log",
             "when": "midnight",
             "formatter": "verbose",
             "interval": 1,
@@ -47,7 +47,7 @@
         "src.corntask.apscheduler_core": {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./logs/apscheduler.log",
+            "filename": "./log/apscheduler.log",
             "when": "midnight",
             "formatter": "verbose",
             "interval": 1,
@@ -65,17 +65,17 @@
     },
     "loggers": {
         "flask": {
-            "handlers": ["console", "pfile"],
+            "handlers": ["console", "file"],
             "level": "DEBUG",
             "propagate": true
         },
         "api": {
-            "handlers": ["console", "papi"],
+            "handlers": ["console", "api"],
             "level": "DEBUG",
             "propagate": true
         },
         "crontemplate": {
-            "handlers": ["console", "pcrontemplate"],
+            "handlers": ["console", "crontemplate"],
             "level": "DEBUG",
             "propagate": true
         },
@@ -85,7 +85,7 @@
             "propagate": true
         },
         "main.sub": {
-            "handlers": ["console", "pfile"],
+            "handlers": ["console", "file"],
             "level": "DEBUG",
             "propagate": true
         }

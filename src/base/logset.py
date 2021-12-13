@@ -47,7 +47,7 @@ class CustomHandler(logging.Handler):
         return requests.post(url, log_entry, headers={"Content-type": "application/json"}).content
         
 def setup_logging():   
-    default_path = os.path.abspath("./src/loggers.json")
+    default_path = os.path.abspath("./src/logger.json")
     if os.path.exists("./log/api") == False:
         os.mkdir("./log/api")
     if os.path.exists("./log/fs") == False:

@@ -70,8 +70,7 @@ class taskOther_switching():
         self.cfg = {'cron': '0/2 * * * * * *',
                     'disurl': '{host}/api/p2ptasks/',
                     'update_dest_disurl': '{host}/api/p2ptasks/dest/change/',
-                    'update_i_flag_disurl': '{host}/api/p2ptasks/goon/',
-                    'desc':"通用Other表任务下发AGV"}
+                    'update_i_flag_disurl': '{host}/api/p2ptasks/goon/'}
 
     @staticmethod
     def get_name():
@@ -117,13 +116,13 @@ class taskOther_switching():
                     continue
                 area_id = area_result[0][0]
 
-                if current_taskOther.TaskType in ('20','60','50','98','99'):
+                if current_taskOther.TaskType in ('20','60','50'):
                     pltask_json["task_no"] = current_taskOther.TaskId
                     pltask_json["priority"] = current_taskOther.Prority
                     pltask_json["status"] = 'created'
                     if (current_taskOther.FromLoc or current_taskOther.ToLoc) is None:
                         continue
-                    if current_taskOther.TaskType in ['20','98']:
+                    if current_taskOther.TaskType == '20':
                         location_name = current_taskOther.FromLoc
                     else:
                         location_name = current_taskOther.ToLoc
@@ -134,26 +133,26 @@ class taskOther_switching():
                     else:
                         check_point = location_result[0][0]
 
-                    if current_taskOther.TaskType in ['20','98']:
+                    if current_taskOther.TaskType == '20':
                         # 1.叫空托（类出库下架）
                         if check_point == '' or check_point is None:
-                            prt_1 = {'pos': current_taskOther.FromLoc, 'opt': 'load'}
+                            prt_1 = {'pos': current_taskOther.FromLoc, 'opt': 'load', 'i_flag': 0}
                         else:
-                            prt_1 = {'pos': current_taskOther.FromLoc, 'opt': 'load', 'check_point': check_point}
-                        prt_2 = {'pos': current_taskOther.ToLoc, 'opt': 'unload'}
+                            prt_1 = {'pos': current_taskOther.FromLoc, 'opt': 'load', 'check_point': check_point, 'i_flag': 0}
+                        prt_2 = {'pos': current_taskOther.ToLoc, 'opt': 'unload', 'i_flag': 0}
 
-                    elif current_taskOther.TaskType in ['60','99']:
+                    elif current_taskOther.TaskType == '60':
                         # 2.回空托（类入库上架）
-                        prt_1 = {'pos': current_taskOther.FromLoc, 'opt': 'load'}
+                        prt_1 = {'pos': current_taskOther.FromLoc, 'opt': 'load', 'i_flag': 0}
                         if check_point == '' or check_point is None:
-                            prt_2 = {'pos': current_taskOther.ToLoc, 'opt': 'unload'}
+                            prt_2 = {'pos': current_taskOther.ToLoc, 'opt': 'unload', 'i_flag': 0}
                         else:
-                            prt_2 = {'pos': current_taskOther.ToLoc, 'opt': 'unload', 'check_point': check_point}
+                            prt_2 = {'pos': current_taskOther.ToLoc, 'opt': 'unload', 'check_point': check_point,'i_flag': 0}
 
                     else:
                         # 3.调拨（无check点）
-                        prt_1 = {'pos': current_taskOther.FromLoc, 'opt': 'load'}
-                        prt_2 = {'pos': current_taskOther.ToLoc, 'opt': 'unload'}
+                        prt_1 = {'pos': current_taskOther.FromLoc, 'opt': 'load', 'i_flag': 0}
+                        prt_2 = {'pos': current_taskOther.ToLoc, 'opt': 'unload', 'i_flag': 0}
 
                     pltask_json["optlist"].append(prt_1)
                     pltask_json["optlist"].append(prt_2)

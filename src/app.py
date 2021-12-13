@@ -7,6 +7,7 @@ from flask import Flask
 from .base.logset import setup_logging
 from .corntask.app import asyntask_bp
 from .pltask.app import task_bp
+from .modbustest.app import mt_bp
 #from .modbus.app import mod_bp
 from .version import version
 #from .settings import brokers,backend
@@ -22,7 +23,7 @@ def create_app():
     #app.config.from_object(Database)
     app.register_blueprint(asyntask_bp)
     app.register_blueprint(task_bp)
-    #app.register_blueprint(mod_bp)
+    app.register_blueprint(mt_bp)
     #app.register_blueprint(exception,url_prefix='/api')
     #db.init_app(app)
     

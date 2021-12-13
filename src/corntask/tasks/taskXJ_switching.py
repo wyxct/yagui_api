@@ -33,7 +33,6 @@ class TaskXJ():
         self.empty_pallet_pos = None
         self.i_flag = None
         self.WHAreaId = None
-        self.empty_pallet_topos = None
 
 def resolve_taskXJ(current_row)->TaskXJ or None:
     if current_row is None:
@@ -63,8 +62,6 @@ def resolve_taskXJ(current_row)->TaskXJ or None:
             TaskXJ_info.i_flag = current_row[8]
         if current_row[9] is not None:
             TaskXJ_info.WHAreaId = current_row[9]
-        if current_row[10] is not None:
-            TaskXJ_info.empty_pallet_topos = current_row[10]
 
         return TaskXJ_info
     except Exception as e:
@@ -78,8 +75,7 @@ class taskXJ_switching():
     def __init__(self):
         self.__name = taskXJ_switching.get_name()
         self.cfg = {'cron': '0/2 * * * * * *',
-                    'disurl': '{host}/api/p2ptasks/',
-                    'desc':"金红叶下架任务下发AGV"}
+                    'disurl': '{host}/api/p2ptasks/'}
 
     @staticmethod
     def get_name():
@@ -150,28 +146,27 @@ class taskXJ_switching():
                 area_id = area_result[0][0]
 
                 if check_point == '' or check_point is None:
-                    prt_1 = {'pos': current_taskXJ.FromLoc, 'opt': 'load'}
+                    prt_1 = {'pos': current_taskXJ.FromLoc, 'opt': 'load', 'i_flag': 0}
                 else:
-                    prt_1 = {'pos': current_taskXJ.FromLoc, 'opt': 'load', 'check_point':check_point}
+                    prt_1 = {'pos': current_taskXJ.FromLoc, 'opt': 'load', 'check_point':check_point, 'i_flag': 0}
                 pltask_json["optlist"].append(prt_1)
 
-                # 2.去终点卸货——是否有交互【业务层为是否自动完成】；
-                if current_taskXJ.i_flag == 'N':
-                    i_flag = 0 # 不自动完成[False]
+                # 2.去终点卸货——是否有交互；
+                if current_taskXJ.i_flag == 'Y':
+                    i_flag = 1
                 else:
-                    i_flag = 1 # 不自动完成[True]
+                    i_flag = 0
 
                 prt_2 = {'pos': current_taskXJ.ToLoc, 'opt': 'unload', 'i_flag': i_flag}
                 pltask_json["optlist"].append(prt_2)
 
                 # 3.是否带空托
-                if current_taskXJ.empty_pallet_exist == 'Y' \
-                        and current_taskXJ.empty_pallet_topos is not None \
-                        and current_taskXJ.empty_pallet_pos is not None:
-                    prt_3 = {'pos': current_taskXJ.empty_pallet_pos, 'opt': 'load'}
+                if current_taskXJ.empty_pallet_exist == 'Y':
+                    prt_3 = {'pos': current_taskXJ.empty_pallet_pos, 'opt': 'load', 'i_flag': 0}
                     pltask_json["optlist"].append(prt_3)
 
-                    prt_4 = {'pos': current_taskXJ.empty_pallet_topos, 'opt': 'unload'}
+                    # todo:开发一个函数查找空托盘垛的目的地
+                    prt_4 = {'pos': current_taskXJ.empty_pallet_pos, 'opt': 'unload', 'i_flag': 0}
                     pltask_json["optlist"].append(prt_4)
 
                 logger.info('pltask_json: ' + str(pltask_json))

@@ -44,7 +44,7 @@ class monitoring_e_port():
         如果标志位1，
         读取批次数据
         '''
-        from ...modbus import get_string_sync
+        from ...modbus import get_string_batch
         from ...settings import modbus_cfg
         from ...base.webwmes import reporteport
         import re
@@ -89,11 +89,13 @@ class monitoring_e_port():
             else: #非空，查看是否被取走，
 
                 loc = reslavelist[row.location_name]
-                addr = modbus_cfg[loc]["addrs"]["r_batch"]
-
+                '''
                 addr_list =[]
                 addr_list.append(addr)
                 flag,data = get_string_sync(loc,addr_list)
+                
+                '''          
+                flag,data = get_string_batch(loc)
                 if flag == True:
                     #将从设备查到的批次信息传给wms
                     rst,code = reporteport({"dev":  modbus_cfg[loc]["id"],"data":data})

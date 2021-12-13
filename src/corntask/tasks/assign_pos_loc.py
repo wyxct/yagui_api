@@ -26,8 +26,7 @@ class assign_pos_loc():
         self.cfg = {'cron': '0/2 * * * * * *',
                     'get_interaction_disurl':'{host}/api/p2ptasks/interaction/?info_status=active&type_id=[1,4,5]',
                     'update_dest_disurl': '{host}/api/p2ptasks/interaction/',
-                    'get_slaver_info_disurl': '{host}/api/p2ptasks/accessibleloc/?loc_n=',
-                    'desc':"金红叶check点目的地分配策略"}
+                    'get_slaver_info_disurl': '{host}/api/p2ptasks/accessibleloc/?loc_n='}
 
     @staticmethod
     def get_name():
@@ -68,36 +67,22 @@ class assign_pos_loc():
                         for re_data in re_data_list:
                             interaction_info_id = re_data['interaction_info_id']
                             interaction_info_type_id = re_data['interaction_info_type_id']
-                            task_id = re_data['interaction_info_name']
                             pos_loc = re_data['value_json'].get('pos',None)
-                            new_loc = None
                             if pos_loc is None:
                                 logger.info('there is no pos in interaction.value_json, info_id = ' +str(interaction_info_id))
                                 continue
                             else:
-                                # 检验单子的任务类型
-                                get_task_type_sql = SQL.get_taskOther_by_taskid.format(TaskId=task_id)
-                                task_type_result = run_sql(get_task_type_sql)
-
-                                if task_type_result != [] and task_type_result[0][0] in ['98','99']:
-                                    # 空托垛任务
-                                    if interaction_info_type_id == 1:
-                                        # 取货
-                                        new_loc = get_StackFromLoc_in_check(pos_loc)
-                                    elif interaction_info_type_id == 4:
-                                        # 卸货
-                                        new_loc = get_StackToLoc_in_check(pos_loc)
+                                if interaction_info_type_id == 1:
+                                    # 取货
+                                    new_loc = get_FromLoc_in_check(pos_loc)
+                                elif interaction_info_type_id == 4:
+                                    # 卸货
+                                    new_loc = get_ToLoc_in_check(pos_loc)
+                                elif interaction_info_type_id == 5:
+                                    # 传动带check点卸货
+                                    new_loc = get_ToLoc_in_trans_check(area_url)
                                 else:
-                                    # 非空托垛任务
-                                    if interaction_info_type_id == 1:
-                                        # 取货
-                                        new_loc = get_FromLoc_in_check(pos_loc)
-                                    elif interaction_info_type_id == 4:
-                                        # 卸货
-                                        new_loc = get_ToLoc_in_check(pos_loc)
-                                    elif interaction_info_type_id == 5:
-                                        # 传动带check点卸货
-                                        new_loc = get_ToLoc_in_trans_check(area_url)
+                                    new_loc = None
 
                                 if new_loc is None:
                                     # todo: 分配目的地无位置，如何处理？
@@ -150,29 +135,6 @@ def get_ToLoc_in_check(pos_loc):
 
     return empty_loc
 
-def get_StackToLoc_in_check(pos_loc):
-    # 空托垛卸货
-    get_empty_loc_sql = SQL.get_stack_empty_loc.format(pos_loc=pos_loc)
-    empty_loc_result = run_sql(get_empty_loc_sql)
-    if empty_loc_result != []:
-        empty_loc = empty_loc_result[0][0]
-    else:
-        logger.warning('there is no empty des for ' + str(pos_loc))
-        return None
-
-    return empty_loc
-
-def get_StackFromLoc_in_check(pos_loc):
-    # 空托垛取货
-    get_full_loc_sql = SQL.get_stack_full_pallet_loc.format(pos_loc=pos_loc)
-    full_loc_result = run_sql(get_full_loc_sql)
-    if full_loc_result != []:
-        full_loc = full_loc_result[0][0]
-    else:
-        print()
-        return None
-
-    return full_loc
 
 def get_FromLoc_in_check(pos_loc):
     get_full_loc_sql = SQL.get_full_pallet_loc.format(pos_loc=pos_loc)
