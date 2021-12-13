@@ -21,17 +21,18 @@ headers = {
             'cache-control': "no-cache",
         }
 
-class assign_pos_loc():
+class assign_pos_loc_QLSH():
     def __init__(self):
-        self.__name = assign_pos_loc.get_name()
+        self.__name = assign_pos_loc_QLSH.get_name()
         self.cfg = {'cron': '0/2 * * * * * *',
                     'get_interaction_disurl':'{host}/api/p2ptasks/interaction/?info_status=active&type_id=[1,4,5]',
                     'update_dest_disurl': '{host}/api/p2ptasks/interaction/',
-                    'get_slaver_info_disurl': '{host}/api/p2ptasks/accessibleloc/?loc_n='}
+                    'get_slaver_info_disurl': '{host}/api/p2ptasks/accessibleloc/?loc_n=',
+                    'desc':"齐鲁石化check点目的地分配策略"}
 
     @staticmethod
     def get_name():
-        return "assign_pos_loc"
+        return "assign_pos_loc_QLSH"
 
     @staticmethod
     def get_cfg():
@@ -40,7 +41,7 @@ class assign_pos_loc():
     # @catch_exception
     def run(self):
         #from ...base.models.public_model import db,CronTaskResult
-        # logger.info(self.__name+ ': assign_pos_loc running,'+ time.strftime(
+        # logger.info(self.__name+ ': assign_pos_loc_QLSH running,'+ time.strftime(
         #     "%Y-%m-%d %H:%M:%S", time.localtime()))
 
         result_data = {"order": []}

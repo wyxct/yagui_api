@@ -48,6 +48,8 @@ class CustomHandler(logging.Handler):
         
 def setup_logging():   
     default_path = os.path.abspath("./src/logger.json")
+    if os.path.exists("./log") == False:
+        os.mkdir("./log")
     if os.path.exists("./log/api") == False:
         os.mkdir("./log/api")
     if os.path.exists("./log/fs") == False:

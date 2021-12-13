@@ -66,7 +66,8 @@ class taskSJ_switching():
     def __init__(self):
         self.__name = taskSJ_switching.get_name()
         self.cfg = {'cron': '0/2 * * * * * *',
-                    'disurl': '{host}/api/p2ptasks/'}
+                    'disurl': '{host}/api/p2ptasks/',
+                    'desc':"通用上架任务下发AGV"}
 
     @staticmethod
     def get_name():
@@ -121,7 +122,7 @@ class taskSJ_switching():
                     continue
 
                 # 1.去起点取货
-                prt_1 = {'pos': current_taskSJ.FromLoc, 'opt': 'load', 'i_flag': 0}
+                prt_1 = {'pos': current_taskSJ.FromLoc, 'opt': 'load'}
                 pltask_json["optlist"].append(prt_1)
 
                 # 2.去check点
@@ -140,9 +141,9 @@ class taskSJ_switching():
                 area_id = area_result[0][0]
 
                 if check_point == '' or check_point is None:
-                    prt_2 = {'pos': current_taskSJ.ToLoc, 'opt': 'unload', 'i_flag': 0}
+                    prt_2 = {'pos': current_taskSJ.ToLoc, 'opt': 'unload'}
                 else:
-                    prt_2 = {'pos': current_taskSJ.ToLoc, 'opt': 'unload', 'check_point': check_point, 'i_flag': 0}
+                    prt_2 = {'pos': current_taskSJ.ToLoc, 'opt': 'unload', 'check_point': check_point}
                 pltask_json["optlist"].append(prt_2)
 
                 logger.info('pltask_json: ' + str(pltask_json))

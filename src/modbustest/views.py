@@ -59,6 +59,7 @@ class functest(Resource):
     '''
     def post(self):
          
+
         try:
             data = json.loads(request.data)
         except (Exception) as e:

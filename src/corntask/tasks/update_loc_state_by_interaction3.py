@@ -19,7 +19,8 @@ class update_loc_state_by_interaction3():
         self.__name = update_loc_state_by_interaction3.get_name()
         self.cfg = {'cron': '0/2 * * * * * *',
                     'get_interaction_disurl':'{host}/api/p2ptasks/interaction/?info_status=active&type_id=[3,6]',
-                    'update_dest_disurl': '{host}/api/p2ptasks/interaction/'}
+                    'update_dest_disurl': '{host}/api/p2ptasks/interaction/',
+                    'desc':"通用库位状态维护策略"}
         self.update_type = 'false'
         self.update_list = "('P1-01-01-01','P1-01-02-01')"
 
@@ -77,23 +78,50 @@ class update_loc_state_by_interaction3():
                         re_data_list = interaction_info['data']
                         for re_data in re_data_list:
                             interaction_info_id = re_data['interaction_info_id']
-                            # interaction_info_name = re_data['interaction_info_name']
+                            task_id = re_data['interaction_info_name']
                             interaction_info_type_id = re_data['interaction_info_type_id']
                             pos_loc = re_data['value_json'].get('pos',None)
                             if pos_loc is None:
                                 logger.info('there is no pos in interaction.value_json, info_id = ' + str(interaction_info_id))
                                 continue
                             else:
-                                if interaction_info_type_id == 3:
-                                    update_loc_sql = SQL.update_location.format(Status='empty', OPT_By='interaction3()',
-                                                                                LocationName=pos_loc)
-                                    run_sql(update_loc_sql, 'update')
-                                elif interaction_info_type_id == 6:
-                                    update_loc_sql = SQL.update_location.format(Status='full', OPT_By='interaction6()',
-                                                                                LocationName=pos_loc)
-                                    run_sql(update_loc_sql, 'update')
+                                # 检验单子的任务类型
+                                get_task_type_sql = SQL.get_taskOther_by_taskid.format(TaskId=task_id)
+                                task_type_result = run_sql(get_task_type_sql)
+
+                                if task_type_result != [] and task_type_result[0][0] in ['98','99'] and pos_loc[:6] == 'B01-T1':
+                                    # 空托垛任务
+                                    get_groupid_sql = SQL.get_loc_groupid.format(LocationName=pos_loc)
+                                    groupid_result = run_sql(get_groupid_sql)
+                                    if groupid_result != []:
+                                        GroupId = groupid_result[0][0]
+                                    else:
+                                        logger.info('stack loc without groupid,loc: '+ str(pos_loc))
+                                        return
+
+                                    if interaction_info_type_id == 3:
+                                        update_loc_sql = SQL.update_stack_location.format(Status='empty', OPT_By='interaction3()',GroupId = GroupId,LLayer=10)
+                                        run_sql(update_loc_sql, 'update')
+                                    elif interaction_info_type_id == 6:
+                                        PalletCount = task_type_result[0][1]
+                                        if PalletCount is not None:
+                                            update_loc_sql = SQL.update_stack_location.format(Status='full', OPT_By='interaction6()',GroupId = GroupId,LLayer=PalletCount)
+                                            run_sql(update_loc_sql, 'update')
+                                        else:
+                                            logger.info('there is no palletcount with stack task,task_id: ' + str(task_id))
+                                    else:
+                                        return
                                 else:
-                                    return
+                                    if interaction_info_type_id == 3:
+                                        update_loc_sql = SQL.update_location.format(Status='empty', OPT_By='interaction3()',
+                                                                                    LocationName=pos_loc)
+                                        run_sql(update_loc_sql, 'update')
+                                    elif interaction_info_type_id == 6:
+                                        update_loc_sql = SQL.update_location.format(Status='full', OPT_By='interaction6()',
+                                                                                    LocationName=pos_loc)
+                                        run_sql(update_loc_sql, 'update')
+                                    else:
+                                        return
 
                                 interact_json = {
                                     'interaction_info_id': interaction_info_id,

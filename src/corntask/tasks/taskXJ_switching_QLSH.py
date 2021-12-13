@@ -75,7 +75,8 @@ class taskXJ_switching_QLSH():
     def __init__(self):
         self.__name = taskXJ_switching_QLSH.get_name()
         self.cfg = {'cron': '0/2 * * * * * *',
-                    'disurl': '{host}/api/p2ptasks/'}
+                    'disurl': '{host}/api/p2ptasks/',
+                    'desc':"齐鲁石化下架任务下发AGV"}
 
     @staticmethod
     def get_name():
@@ -146,9 +147,9 @@ class taskXJ_switching_QLSH():
                 area_id = area_result[0][0]
 
                 if check_point == '' or check_point is None:
-                    prt_1 = {'pos': current_taskXJ.FromLoc, 'opt': 'load', 'i_flag': 0}
+                    prt_1 = {'pos': current_taskXJ.FromLoc, 'opt': 'load'}
                 else:
-                    prt_1 = {'pos': current_taskXJ.FromLoc, 'opt': 'load', 'check_point':check_point, 'i_flag': 0}
+                    prt_1 = {'pos': current_taskXJ.FromLoc, 'opt': 'load', 'check_point':check_point}
                 pltask_json["optlist"].append(prt_1)
 
                 # 3.去check点 + 去终点卸货——是否有check点；
@@ -160,9 +161,9 @@ class taskXJ_switching_QLSH():
                     toloc_check_point = toloc_location_result[0][0]
 
                 if toloc_check_point == '' or toloc_check_point is None:
-                    prt_2 = {'pos': current_taskXJ.ToLoc, 'opt': 'unload', 'i_flag': 0}
+                    prt_2 = {'pos': current_taskXJ.ToLoc, 'opt': 'unload'}
                 else:
-                    prt_2 = {'pos': current_taskXJ.ToLoc, 'opt': 'unload', 'check_point': toloc_check_point, 'i_flag': 0}
+                    prt_2 = {'pos': current_taskXJ.ToLoc, 'opt': 'unload', 'check_point': toloc_check_point}
                 pltask_json["optlist"].append(prt_2)
 
                 logger.info('pltask_json: ' + str(pltask_json))
