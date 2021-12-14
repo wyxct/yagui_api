@@ -19,11 +19,8 @@ if __name__ == '__main__':
     app = create_app()
     
     from src.corntask.sql_manager import *
-    #from pymssql import _mssql, _pymssql
-    import uuid, decimal
     from src.settings import Database
-    sql_sentence = 'select 1'
-    rows, error_info = execute_commit_sql(Database.sqlserver, sql_sentence)
+    from src.base.dbcon.sqlserver import *
 
     @app.route('/task')
     def adddemo():
