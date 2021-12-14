@@ -4,6 +4,7 @@ import logging
 
 from flask import Flask
 
+from .ordertask.app import task_order
 from .base.logset import setup_logging
 from .corntask.app import asyntask_bp
 from .pltask.app import task_bp
@@ -21,6 +22,7 @@ def create_app():
     app = Flask(__name__,template_folder='../templates',static_folder ='../static' ,static_url_path='/static')   
     CORS(app, resources=r'/*')
     #app.config.from_object(Database)
+    app.register_blueprint(task_order)
     app.register_blueprint(asyntask_bp)
     app.register_blueprint(task_bp)
     app.register_blueprint(mt_bp)
