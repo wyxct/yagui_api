@@ -353,9 +353,38 @@ class Node(object):
 
 class tasktracebackdetail(Resource):
     def __init__(self):
-        self.mprocess = None
+        self.aprocess = [{'id': '0', 'label': '订单未下发', 'l': '-1'},
+                         {'id': '1', 'label': '订单已接收', 'l': '0'},
+                         {'id': '2', 'label': '订单已下发', 'l': '1'},
+                         {'id': '3', 'label': '订单下发失败正在重发', 'l': '1'},
+                         {'id': '4', 'label': '调度已分派车辆', 'l': '2'},
+                         {'id': '5', 'label': 'AGV开始执行', 'l': '4'},
+                         ]
+        self.bprocess = [{'id': '0', 'label': '订单未下发', 'l': '-1'},
+                         {'id': '1', 'label': '订单已接收', 'l': '0'},
+                         {'id': '2', 'label': '订单已下发', 'l': '1'},
+                         {'id': '3', 'label': '订单下发失败正在重发', 'l': '1'},
+                         {'id': '4', 'label': '调度已分派车辆', 'l': '2'},
+                         {'id': '55', 'label': 'AGV开始执行', 'l': '4'},
+                         ]
+        self.mprocess = [{'0': '订单未下发', 'l': '-1'},
+                         {'1': '订单已接收', 'l': '0'},
+                         {'2': '订单已下发', 'l': '1'},
+                         {'3': '订单下发失败正在重发', 'l': '1'},
+                         {'4': '调度已分派车辆', 'l': '2'},
+                         {'5': 'AGV开始执行', 'l': '4'},
+                         ]
+        self.nprocess = [{'0': '订单未下发', 'l': '-1'},
+                         {'1': '订单已接收', 'l': '0'},
+                         {'2': '订单已下发', 'l': '1'},
+                         {'3': '订单下发失败正在重发', 'l': '1'},
+                         {'4': '调度已分派车辆', 'l': '2'},
+                         {'55': 'AGV开始执行', 'l': '4'},
+                         ]
+        self.location = {'load': None, 'check': None, 'unload': None}
         pass
-    def initmap(self,taskno):
+
+    def initmap(self, taskno, pl_list):
         '''
         self.mprocess = [{'0':'{} 订单未下发'.format(taskno),'l':'-1'},
                     {'1':'{} 订单已接收'.format(taskno),'l':'0'},
@@ -368,108 +397,269 @@ class tasktracebackdetail(Resource):
                     {'8':'{} 上报完成'.format(taskno),'l':'7'},
         ]
         '''
-        self.mprocess = [{'0':'订单未下发','l':'-1'},
-                    {'1':'订单已接收','l':'0'},
-                    {'2':'订单已下发','l':'1'},
-                    {'3':'订单下发失败正在重发','l':'1'},
-                    {'4':'调度已分派车辆','l':'2'},
-                    {'5':'agv开始执行','l':'4'},
-                    {'6':'agv执行完成等待数据同步','l':'5'},
-                    {'7':'任务完成等待上报wms','l':'6'},
-                    {'8':'上报完成','l':'7'},
-        ]
-        index ={}
-        for row in self.mprocess:
-            #tmep = None
-            for key,value in row.items():              
-                if key not in index and key !='-1':
-                    tmep = Node(key)
-                    index[key] = tmep
-                    no = key
-                if key =='l' and value != '-1':
-                    index[value].add_child(tmep)
-                    index[no].set_parent(index[value])
+        index = {}
+        if 'TSJ' in taskno:
+            for row in self.mprocess:
+                # tmep = None
+                for key, value in row.items():
+                    if key not in index and key != '-1':
+                        tmep = Node(key)
+                        index[key] = tmep
+                        no = key
+                    if key == 'l' and value != '-1':
+                        index[value].add_child(tmep)
+                        index[no].set_parent(index[value])
+        else:
+            for row in self.nprocess:
+                # tmep = None
+                for key, value in row.items():
+                    if key not in index and key != '-1':
+                        tmep = Node(key)
+                        index[key] = tmep
+                        no = key
+                    if key == 'l' and value != '-1':
+                        index[value].add_child(tmep)
+                        index[no].set_parent(index[value])
         return index
-    
-    def searchsql(self,taskno):
+
+    def searchlocationsql(self, taskno):
         sql = '''
-        with "taskinfo" as
-        (
-            select '{}'::character varying as taskno
-        ),
-        "pl" as(
-            select pt.id,pt.task_type,pt.task_no,pt.from_pos, pt.to_pos, pt.start_time, pt.end_time, 
-            pt.pos_list, pt.next_pos, pt.status, pt.priority, pt.cid, pt.cid_attribute, pt.custom_parm1, 
-            pt.custom_parm2, pt.source, pt.ip, pt.client_name, pt.client_type, pt.memo, pt.ex, 
-            pt.optlist,ptr.relation,ptrp.id as report_id from pl_task as pt 
+            select pt.optlist from pl_task as pt 
             left join pl_task_relation as ptr on pt.id = ptr.pl_task_id 
             left join pl_task_report as ptrp on pt.id =  ptrp.pl_task_id
-            where task_no = (select taskinfo.taskno from taskinfo)
-        ),
-        "ordertask" as (
-            select order_id,order_name,agv_list,ts_id,status,current_destination,current_operation,current_omi,create_time,active_time,finished_time,cancel_time,error_code
-            from layer4_1_om."order" where order_name = (select taskinfo.taskno from taskinfo)
-        )
-        --select ordertask.order_id::character varying from ordertask
-        ,
-        "agvtask" as (
-            select *,loc.location_name from agv_task as at 
-            left join agv_task_execution_data as ated on at.id = ated.agv_task_id
-            inner join location as loc on loc.id = at.destination_location_id
-            where task_set_no = (select ordertask.order_id::character varying from ordertask)
-        ),
-        "agvcmd" as (
-            select * from agv_command where id in (select agvtask.current_agv_command_id from agvtask)
-        )
-        select ordertask.order_name,agv_list,ordertask.ts_id,ordertask.status,ordertask.current_destination,ordertask.current_operation,
-        ordertask.current_omi,ordertask.create_time::character varying,ordertask.active_time::character varying,ordertask.finished_time::character varying,ordertask.cancel_time::character varying,ordertask.error_code,
-        (case 
-        when (select count(*) from pl)=0 then '0' 
-        when (select pl.relation from pl) is NULL then '3'
-        when (select ordertask.error_code from ordertask) is not NULL then 'e'
-        when (select count(*) from agvtask)=0 then '2'
-        when (select count(*) from agvcmd)=0 then '4'
-        when (select ordertask.status from ordertask) not in ('finish','manually_finish') then '5'
-        when (select pl.status from pl) != 'completed' then '6'
-        when (select pl.report_id from pl) is NULL then '7'
-        when (select pl.report_id from pl) is not NULL then '8'
-        else '其他' end) as process
-        from ordertask
+            where task_no = '{}'
         '''.format(taskno)
         return sql
-    
-    def get(self,taskno):
-           
-        #print(str(orderlist).lstrip('[').rstrip(']'))
-        
+
+    def searchsql(self, taskno):
+        if 'TSJ' in taskno:
+            sql = '''
+            with "taskinfo" as
+            (
+                select '{}'::character varying as taskno
+            ),
+            "pl" as(
+                select pt.id,pt.task_type,pt.task_no,pt.from_pos, pt.to_pos, pt.start_time, pt.end_time, 
+                pt.pos_list, pt.next_pos, pt.status, pt.priority, pt.cid, pt.cid_attribute, pt.custom_parm1, 
+                pt.custom_parm2, pt.source, pt.ip, pt.client_name, pt.client_type, pt.memo, pt.ex, 
+                pt.optlist,ptr.relation,ptrp.id as report_id from pl_task as pt 
+                left join pl_task_relation as ptr on pt.id = ptr.pl_task_id 
+                left join pl_task_report as ptrp on pt.id =  ptrp.pl_task_id
+                where task_no = (select taskinfo.taskno from taskinfo)
+            ),
+            "ordertask" as (
+                select order_id,order_name,agv_list,ts_id,status,current_destination,current_operation,current_omi,create_time,active_time,finished_time,cancel_time,error_code
+                from layer4_1_om."order" where order_name = (select taskinfo.taskno from taskinfo)
+            )
+            --select ordertask.order_id::character varying from ordertask
+            ,
+            "agvtask" as (
+                select *,loc.location_name from agv_task as at 
+                left join agv_task_execution_data as ated on at.id = ated.agv_task_id
+                inner join location as loc on loc.id = at.destination_location_id
+                where task_set_no = (select ordertask.order_id::character varying from ordertask)
+            ),
+            "agvcmd" as (
+                select * from agv_command where id in (select agvtask.current_agv_command_id from agvtask)
+            )
+            select ordertask.order_name,agv_list,ordertask.ts_id,ordertask.status,ordertask.current_destination,ordertask.current_operation,
+            ordertask.current_omi,ordertask.create_time::character varying,ordertask.active_time::character varying,ordertask.finished_time::character varying,ordertask.cancel_time::character varying,ordertask.error_code,
+            (case 
+            when (select count(*) from pl)=0 then '0' 
+            when (select pl.relation from pl) is NULL then '3'
+            when (select ordertask.error_code from ordertask) is not NULL then '999'
+            when (select count(*) from agvtask)=0 then '2'
+            when (select count(*) from agvcmd)=0 then '4'
+            when (select ordertask.status from ordertask) not in ('finish','manually_finish') then '5'
+            '''.format(taskno)
+        else:
+            sql = '''
+            with "taskinfo" as
+            (
+                select '{}'::character varying as taskno
+            ),
+            "pl" as(
+                select pt.id,pt.task_type,pt.task_no,pt.from_pos, pt.to_pos, pt.start_time, pt.end_time, 
+                pt.pos_list, pt.next_pos, pt.status, pt.priority, pt.cid, pt.cid_attribute, pt.custom_parm1, 
+                pt.custom_parm2, pt.source, pt.ip, pt.client_name, pt.client_type, pt.memo, pt.ex, 
+                pt.optlist,ptr.relation,ptrp.id as report_id from pl_task as pt 
+                left join pl_task_relation as ptr on pt.id = ptr.pl_task_id 
+                left join pl_task_report as ptrp on pt.id =  ptrp.pl_task_id
+                where task_no = (select taskinfo.taskno from taskinfo)
+            ),
+            "ordertask" as (
+                select order_id,order_name,agv_list,ts_id,status,current_destination,current_operation,current_omi,create_time,active_time,finished_time,cancel_time,error_code
+                from layer4_1_om."order" where order_name = (select taskinfo.taskno from taskinfo)
+            )
+            --select ordertask.order_id::character varying from ordertask
+            ,
+            "agvtask" as (
+                select *,loc.location_name from agv_task as at 
+                left join agv_task_execution_data as ated on at.id = ated.agv_task_id
+                inner join location as loc on loc.id = at.destination_location_id
+                where task_set_no = (select ordertask.order_id::character varying from ordertask)
+            ),
+            "agvcmd" as (
+                select * from agv_command where id in (select agvtask.current_agv_command_id from agvtask)
+            )
+            select ordertask.order_name,agv_list,ordertask.ts_id,ordertask.status,ordertask.current_destination,ordertask.current_operation,
+            ordertask.current_omi,ordertask.create_time::character varying,ordertask.active_time::character varying,ordertask.finished_time::character varying,ordertask.cancel_time::character varying,ordertask.error_code,
+            (case 
+            when (select count(*) from pl)=0 then '0' 
+            when (select pl.relation from pl) is NULL then '3'
+            when (select ordertask.error_code from ordertask) is not NULL then '999'
+            when (select count(*) from agvtask)=0 then '2'
+            when (select count(*) from agvcmd)=0 then '4'
+            when (select ordertask.status from ordertask) not in ('finish','manually_finish') then '55'
+            '''.format(taskno)
+        return sql
+
+    def get(self, taskno):
+
+        # print(str(orderlist).lstrip('[').rstrip(']'))
+
         sql = self.searchsql(taskno)
-        promap =  self.initmap(taskno)  
+        location_sql = self.searchlocationsql(taskno)
         cmppro = []
 
-
         try:
-            from sqlalchemy import select,exists
-            with sched.SessionFactory() as session:            
-                cursor = session.execute(sql)
-                orderinfo = cursor.all()
-                session.commit()
+            from sqlalchemy import select, exists
+            session = sched.SessionFactory()
+            cursor = session.execute(location_sql)
+            location_dict = cursor.fetchall()
+            session.commit()
 
         except (Exception) as e:
             logger.error(str(e))
-            return  {"error":"数据库查询异常"}, 500
-
-        data = [dict(zip(ininfo.keys(),ininfo)) for ininfo in orderinfo]
-        resdata = {"process":[],"info":{}}
+            return {"error": "数据库查询异常"}, 500
+        try:
+            location_dict = location_dict[0][0]
+            print(location_dict)
+            if 'TSJ' in taskno:
+                start=5
+                load_time = 1
+                unload_time = 1
+                check_time = 1
+                for i in location_dict['optlist']:
+                    if i['opt'] == 'load':
+                        self.aprocess.append({'id': str(start + 1), 'label': 'AGV已经生成前往上架取货点{}的任务'.format(i['pos']), 'l': str(start)})
+                        self.mprocess.append({str(start + 1): 'AGV已经生成前往上架取货点{}的任务'.format(i['pos']), 'l': str(start)})
+                        sql = sql+"when (select 1 from agvcmd where parameter_int4_2 = 2 and agvcmd.agv_command_status_id=10)=1 and (select count(*) from agvcmd where parameter_int4_2 = 2)={} then '{}'\n".format(load_time,str(start+1))
+                        start += 1
+                        self.aprocess.append({'id': str(start + 1), 'label': 'AGV正在前往上架取货点{}'.format(i['pos']), 'l': str(start)})
+                        self.mprocess.append({str(start + 1): 'AGV正在前往上架取货点{}'.format(i['pos']), 'l': str(start)})
+                        sql = sql+"when (select 1 from agvcmd where parameter_int4_2 = 2 and agvcmd.agv_command_status_id=11)=1 and (select count(*) from agvcmd where parameter_int4_2 = 2)={} then '{}'\n".format(load_time,str(start+1))
+                        start += 1
+                        load_time+=1
+                    elif i['opt'] == 'unload':
+                        try:#如果去下架位置不存在check点的，直接跳过逻辑
+                            self.aprocess.append({'id': str(start + 1), 'label': 'AGV已经生成前往货区{}的任务'.format(i['check_point']), 'l': str(start)})
+                            self.mprocess.append({str(start + 1): 'AGV已经生成前往货区{}的任务'.format(i['check_point']), 'l': str(start)})
+                            sql = sql + "when (select 1 from agvcmd where parameter_int4_2 = -1 and agvcmd.agv_command_status_id=10)=1 and (select count(*) from agvcmd where parameter_int4_2 = -1)={} then '{}'\n".format(check_time, str(start + 1))
+                            start += 1
+                            self.aprocess.append({'id': str(start + 1), 'label': 'AGV正在前往货区{}'.format(i['check_point']), 'l': str(start)})
+                            self.mprocess.append({str(start + 1): 'AGV正在前往货区{}'.format(i['check_point']), 'l': str(start)})
+                            sql = sql + "when (select 1 from agvcmd where parameter_int4_2 = -1 and agvcmd.agv_command_status_id=11)=1 and (select count(*) from agvcmd where parameter_int4_2 = -1)={} then '{}'\n".format(check_time, str(start + 1))
+                            start += 1
+                            check_time+=1
+                        except:
+                            pass
+                        self.aprocess.append({'id': str(start + 1), 'label': 'AGV已经生成前往上架卸货点{}的任务'.format(i['pos']), 'l': str(start)})
+                        self.mprocess.append({str(start + 1): 'AGV已经生成前往上架卸货点{}的任务'.format(i['pos']), 'l': str(start)})
+                        sql = sql + "when (select 1 from agvcmd where parameter_int4_2 = 1 and agvcmd.agv_command_status_id=10)=1 and (select count(*) from agvcmd where parameter_int4_2 = 1)={} then '{}'\n".format(unload_time, str(start + 1))
+                        start += 1
+                        self.aprocess.append({'id': str(start + 1), 'label': 'AGV正在前往上架卸货点{}'.format(i['pos']), 'l': str(start)})
+                        self.mprocess.append({str(start + 1): 'AGV正在前往上架卸货点{}'.format(i['pos']), 'l': str(start)})
+                        sql = sql + "when (select 1 from agvcmd where parameter_int4_2 = 1 and agvcmd.agv_command_status_id=11)=1 and (select count(*) from agvcmd where parameter_int4_2 = 1)={} then '{}'\n".format(unload_time, str(start + 1))
+                        start += 1
+                        unload_time+=1
+                self.aprocess.append({'id': str(start + 1), 'label': 'AGV执行上架任务完成等待数据同步', 'l': str(start)})
+                self.mprocess.append({str(start + 1): 'AGV执行上架任务完成等待数据同步', 'l': str(start)})
+                sql = sql + "when (select pl.status from pl) != 'completed' then '{}'\n".format(str(start + 1))
+                start += 1
+                self.aprocess.append({'id': str(start + 1), 'label': '上架任务完成等待上报WMS', 'l': str(start)})
+                self.mprocess.append({str(start + 1): '上架任务完成等待上报WMS', 'l': str(start)})
+                sql = sql + "when (select pl.report_id from pl) is NULL then '{}'\n".format(str(start + 1))
+                start += 1
+                self.aprocess.append({'id': str(start + 1), 'label': '上架任务上报完成', 'l': str(start)})
+                self.mprocess.append({str(start + 1): '上架任务上报完成', 'l': str(start)})
+                sql = sql + "when (select pl.report_id from pl) is not NULL then '{}'\nelse '-1' end) as process from ordertask".format(str(start + 1))
+                start += 1
+            else:
+                start = 55
+                load_time = 1
+                unload_time = 1
+                check_time = 1
+                for i in location_dict['optlist']:
+                    if i['opt'] == 'load':
+                        try:#如果去下架位置不存在check点的，直接跳过逻辑
+                            self.bprocess.append({'id': str(start + 1), 'label': 'AGV已经生成前往货区{}的任务'.format(i['check_point']), 'l': str(start)})
+                            self.nprocess.append({str(start + 1): 'AGV已经生成前往货区{}的任务'.format(i['check_point']), 'l': str(start)})
+                            sql = sql + "when (select 1 from agvcmd where parameter_int4_2 = -1 and agvcmd.agv_command_status_id=10)=1 and (select count(*) from agvcmd where parameter_int4_2 = -1)={} then '{}'\n".format(check_time, str(start + 1))
+                            start += 1
+                            self.bprocess.append({'id': str(start + 1), 'label': 'AGV正在前往货区{}'.format(i['check_point']), 'l': str(start)})
+                            self.nprocess.append({str(start + 1): 'AGV正在前往货区{}'.format(i['check_point']), 'l': str(start)})
+                            sql = sql + "when (select 1 from agvcmd where parameter_int4_2 = -1 and agvcmd.agv_command_status_id=11)=1 and (select count(*) from agvcmd where parameter_int4_2 = -1)={} then '{}'\n".format(check_time, str(start + 1))
+                            start += 1
+                        except:
+                            pass
+                        self.bprocess.append({'id': str(start + 1), 'label': 'AGV已经生成前往下架取货点{}的任务'.format(i['pos']), 'l': str(start)})
+                        self.nprocess.append({str(start + 1): 'AGV已经生成前往下架取货点{}的任务'.format(i['pos']), 'l': str(start)})
+                        sql = sql+"when (select 1 from agvcmd where parameter_int4_2 = 2 and agvcmd.agv_command_status_id=10)=1 and (select count(*) from agvcmd where parameter_int4_2 = 2)={} then '{}'\n".format(load_time,str(start+1))
+                        start += 1
+                        self.bprocess.append({'id': str(start + 1), 'label': 'AGV正在前往下架取货点{}'.format(i['pos']), 'l': str(start)})
+                        self.nprocess.append({str(start + 1): 'AGV正在前往下架取货点{}'.format(i['pos']), 'l': str(start)})
+                        sql = sql+"when (select 1 from agvcmd where parameter_int4_2 = 2 and agvcmd.agv_command_status_id=11)=1 and (select count(*) from agvcmd where parameter_int4_2 = 2)={} then '{}'\n".format(load_time,str(start+1))
+                        start += 1
+                    elif i['opt'] == 'unload':
+                        self.bprocess.append({'id': str(start + 1), 'label': 'AGV已经生成前往下架卸货点{}的任务'.format(i['pos']), 'l': str(start)})
+                        self.nprocess.append({str(start + 1): 'AGV已经生成前往下架卸货点{}的任务'.format(i['pos']), 'l': str(start)})
+                        sql = sql + "when (select 1 from agvcmd where parameter_int4_2 = 1 and agvcmd.agv_command_status_id=10)=1 and (select count(*) from agvcmd where parameter_int4_2 = 1)={} then '{}'\n".format(unload_time, str(start + 1))
+                        start += 1
+                        self.bprocess.append({'id': str(start + 1), 'label': 'AGV正在前往下架卸货点{}'.format(i['pos']), 'l': str(start)})
+                        self.nprocess.append({str(start + 1): 'AGV正在前往下架卸货点{}'.format(i['pos']), 'l': str(start)})
+                        sql = sql + "when (select 1 from agvcmd where parameter_int4_2 = 1 and agvcmd.agv_command_status_id=11)=1 and (select count(*) from agvcmd where parameter_int4_2 = 1)={} then '{}'\n".format(unload_time, str(start + 1))
+                        start += 1
+                self.bprocess.append({'id': str(start + 1), 'label': 'AGV执行上架任务完成等待数据同步', 'l': str(start)})
+                self.nprocess.append({str(start + 1): 'AGV执行上架任务完成等待数据同步', 'l': str(start)})
+                sql = sql + "when (select pl.status from pl) != 'completed' then '{}'\n".format(str(start + 1))
+                start += 1
+                self.bprocess.append({'id': str(start + 1), 'label': '上架任务完成等待上报WMS', 'l': str(start)})
+                self.nprocess.append({str(start + 1): '上架任务完成等待上报WMS', 'l': str(start)})
+                sql = sql + "when (select pl.report_id from pl) is NULL then '{}'\n".format(str(start + 1))
+                start += 1
+                self.bprocess.append({'id': str(start + 1), 'label': '上架任务上报完成', 'l': str(start)})
+                self.nprocess.append({str(start + 1): '上架任务上报完成', 'l': str(start)})
+                sql = sql + "when (select pl.report_id from pl) is not NULL then '{}'\nelse '-1' end) as process from ordertask".format(str(start + 1))
+                start += 1
+        except:
+            logger.error("不存在此任务的optlist!")
+            resdata = {"process": [], "info": {}}
+            return resdata,204
+        # try:
+        from sqlalchemy import select, exists
+        session = sched.SessionFactory()
+        cursor = session.execute(sql)
+        orderinfo = cursor.fetchall()
+        session.commit()
+        # except (Exception) as e:
+        #     logger.error(str(e))
+        #     return {"error": "数据库查询异常"}, 500
+        promap = self.initmap(taskno,location_dict)
+        data = [dict(zip(ininfo.keys(), ininfo)) for ininfo in orderinfo]
+        resdata = {"process": [], "info": {}}
         from ..base.errormap import ordererror
-        if len(data)==0:
-            return  {'error':"未查到信息"}, 404
-        for  row in data:
-            if row["process"] == 'e':
+        if len(data) == 0:
+            return {'error': "未查到信息"}, 404
+        for row in data:
+            if row["process"] == '999':
                 if row["error_code"] in ordererror:
                     row["reason"] = ordererror[str(row["error_code"])]
                 else:
-                    row["reason"] = 'unkonw'
-                break    
+                    row["reason"] = 'unknown'
+                break
+            print(row)
+            print(promap)
             node = promap[row["process"]]
             cmppro.append(node.name)
             while True:
@@ -480,93 +670,108 @@ class tasktracebackdetail(Resource):
                     cmppro.append(node.name)
             resdata["process"] = cmppro
             resdata["info"] = row
-            resdata["map"] = self.mprocess
+            if 'TSJ' in taskno:
+                resdata["map"] = self.aprocess
+            else:
+                resdata["map"] = self.bprocess
             break
-        
-        return  resdata, 200
-  
+
+        return resdata, 200
+
+
 class tasktraceback(Resource):
-    
+
     def __init__(self):
-        pass   
+        pass
 
     def get(self):
-       
-        offset = request.args.get("offset") 
+
+        offset = request.args.get("offset")
         limit = request.args.get("limit")
         task_no = request.args.get("task_no")
         b_time = request.args.get("b_time")
         e_time = request.args.get("e_time")
         status = request.args.get("status")
-        offset = 0 if offset is None  else offset
+        offset = 0 if offset is None else offset
         limit = 100 if limit is None else limit
-        b_time =  '2020-1-1' if b_time is None or b_time == '' else b_time
-        e_time =  datetime.strftime(datetime.now(),'%Y-%m-%d %H:%M:%S') if e_time is None or e_time == '' else e_time
+        b_time = '2020-1-1' if b_time is None or b_time == '' else b_time
+        e_time = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S') if e_time is None or e_time == '' else e_time
 
-        try:       
-            from ..base.models.layer2_pallet_model import  PlTask,PlTaskType,PlTaskRelation,PlTaskReport
-            from sqlalchemy import select,exists,between
-             
-            with sched.SessionFactory() as session:            
-                statement = select(PlTask.id,PlTask.task_no,PlTask.task_type,PlTask.status,PlTask.priority,PlTask.ex,PlTaskRelation.relation).outerjoin(PlTaskRelation) \
-                .filter(PlTask.status.in_(['created','handle','active', 'in_progress','completed','error']) if status is None or status == '' else PlTask.status == status,True if task_no is None or task_no == '' else PlTask.task_no == task_no,PlTask.created_timestamp.between(b_time,e_time)).order_by(PlTask.id).offset(offset).limit(limit)
+        try:
+            from ..base.models.layer2_pallet_model import PlTask, PlTaskType, PlTaskRelation, PlTaskReport
+            from sqlalchemy import select, exists, between
+
+            with sched.SessionFactory() as session:
+                statement = select(PlTask.id, PlTask.task_no, PlTask.task_type, PlTask.status, PlTask.priority,
+                                   PlTask.ex, PlTaskRelation.relation).outerjoin(PlTaskRelation) \
+                    .filter(PlTask.status.in_(['created', 'handle', 'active', 'in_progress', 'completed',
+                                               'error']) if status is None or status == '' else PlTask.status == status,
+                            True if task_no is None or task_no == '' else PlTask.task_no == task_no,
+                            PlTask.created_timestamp.between(b_time, e_time)).order_by(PlTask.id).offset(offset).limit(
+                    limit)
                 result = session.execute(statement).all()
-                session.commit()     
+                session.commit()
         except (Exception) as e:
-            logger.error(str(e))           
-            return {"error":"数据库异常，请联系相关人员"},500
+            logger.error(str(e))
+            return {"error": "数据库异常，请联系相关人员"}, 500
 
         import copy
-        orderlist=[]
-        tasktmp = {"task_no":None,"agv_list":None,"status":None,"cur_dest":None,"cur_omi":"","c_t":None,"a_t":None,"cel_t":None,"fin_t":None,"reason":None,"err_code":0}
+        orderlist = []
+        tasktmp = {"task_no": None, "agv_list": None, "status": None, "cur_dest": None, "cur_omi": "", "c_t": None,
+                   "a_t": None, "cel_t": None, "fin_t": None, "reason": None, "err_code": 0}
         taskdict = {}
         rstdata = {}
         for row in result:
             tasktmp["task_no"] = row.task_no
-            tasktmp["status"] = row.status 
+            tasktmp["status"] = row.status
             if row.relation is None:
-                tasktmp["reason"] = "未下发给OM" 
-            else:               
+                tasktmp["reason"] = "未下发给OM"
+            else:
                 orderlist.append(row.relation)
                 taskdict[row.relation] = row
             rstdata[row.task_no] = copy.deepcopy(tasktmp)
 
-        #获取活跃任务对应的order
+        # 获取活跃任务对应的order
         if len(orderlist) == 0:
             print("empty")
             return rstdata, 200
-        #print(str(orderlist).lstrip('[').rstrip(']'))
+        # print(str(orderlist).lstrip('[').rstrip(']'))
         sql = 'select * from layer4_1_om.order where order_name in({})'.format(str(orderlist).lstrip('[').rstrip(']'))
-        #print(sql)
-        with sched.SessionFactory() as session:            
+        # print(sql)
+        with sched.SessionFactory() as session:
             cursor = session.execute(sql)
             orderinfo = cursor.fetchall()
             session.commit()
-        #waiting/active/finish/error/waiting_cancel/cancel_finish/waiting_manually_finish/manually_finish
+        # waiting/active/finish/error/waiting_cancel/cancel_finish/waiting_manually_finish/manually_finish
 
         for row in orderinfo:
-            #处理未发送成功的
+            # 处理未发送成功的
             rstdata[row.order_name]["agv_list"] = row.agv_list
             rstdata[row.order_name]["cur_dest"] = row.current_destination
             rstdata[row.order_name]["cur_omi"] = row.current_omi
-            rstdata[row.order_name]["c_t"] = row.create_time.strftime('%Y-%m-%d %H:%M:%S') if row.create_time is not None else ''
-            rstdata[row.order_name]["a_t"] = row.active_time.strftime('%Y-%m-%d %H:%M:%S') if row.active_time is not None else ''
-            rstdata[row.order_name]["cel_t"] = row.cancel_time.strftime('%Y-%m-%d %H:%M:%S') if row.cancel_time is not None else ''
-            rstdata[row.order_name]["fin_t"] = row.finished_time.strftime('%Y-%m-%d %H:%M:%S') if row.finished_time is not None else ''
+            rstdata[row.order_name]["c_t"] = row.create_time.strftime(
+                '%Y-%m-%d %H:%M:%S') if row.create_time is not None else ''
+            rstdata[row.order_name]["a_t"] = row.active_time.strftime(
+                '%Y-%m-%d %H:%M:%S') if row.active_time is not None else ''
+            rstdata[row.order_name]["cel_t"] = row.cancel_time.strftime(
+                '%Y-%m-%d %H:%M:%S') if row.cancel_time is not None else ''
+            rstdata[row.order_name]["fin_t"] = row.finished_time.strftime(
+                '%Y-%m-%d %H:%M:%S') if row.finished_time is not None else ''
             rstdata[row.order_name]["err_code"] = row.error_code if row.error_code is not None else 0
             if row.status == 'error':
                 rstdata[row.order_name]["status"] = row.status
                 pass
             elif row.status == 'finish' or row.status == 'manually_finish':
                 if rstdata[row.order_name]["status"] != 'completed':
-                   rstdata[row.order_name]["reason"] = "数据尚未同步，长期不同步需要检查监控定时任务"  
+                    rstdata[row.order_name]["reason"] = "数据尚未同步，长期不同步需要检查监控定时任务"
                 else:
-                    with sched.SessionFactory() as session:            
-                        statement = select(PlTaskReport.id).filter(~exists().where(PlTaskReport.pl_task_id ==taskdict[row.order_name].id))
+                    with sched.SessionFactory() as session:
+                        statement = select(PlTaskReport.id).filter(
+                            ~exists().where(PlTaskReport.pl_task_id == taskdict[row.order_name].id))
                         result = session.execute(statement).all()
                         session.commit()
                     rstdata[row.order_name]["reason"] = "数据未上报给wms"
             else:
                 rstdata[row.order_name]["status"] = row.status
 
-        return  rstdata, 200
+        return rstdata, 200
