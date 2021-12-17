@@ -122,7 +122,9 @@ class taskXJ_switching():
                     "priority": None,
                     "status": None,
                     "ex": {"TaskType": "XJ"},
-                    "optlist": []
+                    "optlist": [],
+                    "source":"iwms",
+                    "client_name":self.__name
                 }
                 # 1.通过接口下发agv动作任务
                 current_taskXJ = resolve_taskXJ(current_task)
@@ -161,7 +163,18 @@ class taskXJ_switching():
                 else:
                     i_flag = 1 # 不自动完成[True]
 
-                prt_2 = {'pos': current_taskXJ.ToLoc, 'opt': 'unload', 'i_flag': i_flag}
+                # 终点是否有check点
+                to_check_point_sql = SQL.get_check_point.format(LocationName=current_taskXJ.ToLoc)
+                to_location_result = run_sql(to_check_point_sql)
+                if to_location_result == []:
+                    to_check_point = None
+                else:
+                    to_check_point = to_location_result[0][0]
+
+                if to_check_point == '' or to_check_point is None:
+                    prt_2 = {'pos': current_taskXJ.ToLoc, 'opt': 'unload', 'i_flag': i_flag}
+                else:
+                    prt_2 = {'pos': current_taskXJ.ToLoc, 'opt': 'unload', 'check_point':to_check_point, 'i_flag': i_flag}
                 pltask_json["optlist"].append(prt_2)
 
                 # 3.是否带空托

@@ -106,7 +106,9 @@ class taskOther_switching():
                     "priority": None,
                     "status": None,
                     "ex": {"TaskType": "Other"},
-                    "optlist": []
+                    "optlist": [],
+                    "source":"iwms",
+                    "client_name":self.__name
                 }
                 # 通过接口下发agv动作任务
                 current_taskOther = resolve_taskOther(current_task)
