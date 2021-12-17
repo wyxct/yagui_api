@@ -2,7 +2,11 @@
 {
     "server":{
         "PORT":"8501",
-        "THREADED":false
+        "THREADED":false,
+        "project":"QLSH001"
+    },
+    "scheduler":{
+        "SELF_BOOT" :["monitoring_order"] 
     },
     "db":{
         "postgresql":{
@@ -86,6 +90,15 @@
                 "port":502,
                 "id":4,
                 "addrs":{"r_batch":5009},
+                "time_out":5
+            },
+        "unload_pallet":
+            {
+                "ip":"127.0.0.1",
+                "port":502,
+                "id":1,
+                "addrs":{"r_need":0},
+                "r_need_len":1,
                 "time_out":5
             } 
     }

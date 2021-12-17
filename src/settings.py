@@ -61,8 +61,10 @@ class server(Config):
     VERSION = "0.0.0.0" if CFG is None or "VERSION" not in CFG else CFG["VERSION"]
     
 class Scheduler:
+    CFG = None if sinleCfg is None or "scheduler" not in sinleCfg else sinleCfg["server"]
     """App configuration."""
     SCHEDULER_API_ENABLED = False
+    SELF_BOOT =['monitoring_order'] if CFG is None or "SELF_BOOT" not in CFG else CFG["self_boot"]
 
 class Logging:
     LOGGING = {
