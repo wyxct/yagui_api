@@ -1,6 +1,6 @@
 @echo off
 ::脚本功能
-::manage程序安装并启动服务
+::移除manage程序服务
 @echo [enabel super administrator rights]
 %1 %2
 ver|find "5.">nul&&goto :st
@@ -11,7 +11,7 @@ mshta vbscript:createobject("shell.application").shellexecute("%~s0","goto :st",
 set mypath=%~dp0
 set path=%mypath%;%path%
 
-@echo [stop TaskDispacher]
-call nssm stop TaskDispacher
+@echo [start uninstall TaskDispacher]
+call nssm remove TaskDispacher confirm
 
 pause
