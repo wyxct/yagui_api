@@ -17,11 +17,11 @@
             "PASSWORD":"123456"
         },
         "sqlserver":{
-            "HOST":"10.10.90.87",
+            "HOST":"10.10.90.84",
             "PORT":"5432",
-            "DATABASE":"qilushihua",
-            "USERNAME":"postgres",
-            "PASSWORD":"123"
+            "DATABASE":"IWMS",
+            "USERNAME":"sa",
+            "PASSWORD":"wms@123"
         }
 
     },
