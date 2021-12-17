@@ -1,6 +1,6 @@
 @echo off
 ::脚本功能
-::manage程序安装并启动服务
+::manage启动服务
 @echo [enabel super administrator rights]
 %1 %2
 ver|find "5.">nul&&goto :st
