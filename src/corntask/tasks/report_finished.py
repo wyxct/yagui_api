@@ -43,7 +43,7 @@ class report_finished():
         from sqlalchemy import select,update,exists
 
         with sched.SessionFactory() as session:            
-            statement = select(PlTask.id,PlTask.task_no,PlTask.task_type,PlTask.status,PlTask.priority,PlTask.ex,PlTaskRelation.relation).filter(~exists().where(PlTaskReport.pl_task_id ==PlTask.id)).join(PlTaskRelation).filter(PlTask.status.in_(['completed']))
+            statement = select(PlTask.id,PlTask.task_no,PlTask.task_type,PlTask.status,PlTask.priority,PlTask.ex,PlTaskRelation.relation).filter(~exists().where(PlTaskReport.pl_task_id == PlTask.id),PlTask.source =='iwms').join(PlTaskRelation).filter(PlTask.status.in_(['completed']))
             result = session.execute(statement).all()
             session.commit()
         import json
