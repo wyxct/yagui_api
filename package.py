@@ -36,7 +36,7 @@ def package_program():
     shutil.copytree("scripts", "manage/scripts")
     removepath('manage/src')
     print("tar file")
-    tar_filename = f"manage_server_{version}"
+    tar_filename = f"TaskDispacher_{version}"
     shutil.make_archive(tar_filename, "zip", "manage")
     print("tar file successfully")
     print("package monitor server successfully")

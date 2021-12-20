@@ -36,13 +36,13 @@ class SQL:
 
     # Property7:【取】 1)full:位置被托盘占据; 2)lock:位置预定，位置上仍有托盘; 3)empty:托盘被AGV搬走，空位状态;
     #           【放】1)empty:空位状态; 2)lock:位置预定，位置上没有托盘; 3)full:托盘被AGV放在位置上;
-    # PickGoodsOrder，此处暂时按照优先级数字约小越优先
+    # 取货优先级大的先取（靠近check点），卸货优先级小的开始卸（远离check点）{取卸货的优先级值一样}
     get_empty_pallet_loc = '''SELECT TOP 1 LocationName, Property6 AS CID FROM COM_Location WHERE 
 WHAreaId IN (SELECT EmptyPalletGroupWHAreaId FROM COM_WHAreaRelation WHERE OutWHAreaId = '{WHAreaId}')
 AND Property7 = 'full'
-ORDER BY CAST (PickGoodsOrder AS INTEGER); '''
+ORDER BY CAST (PickGoodsOrder AS INTEGER) DESC; '''
 
-# 卸货
+    # 卸货
     get_empty_loc = '''SELECT TOP 1 LocationName FROM COM_Location WHERE 
 WHAreaId IN (SELECT WHAreaId FROM COM_Location WHERE LocationName = '{pos_loc}')
 AND AisleId IN (SELECT AisleId FROM COM_Location WHERE LocationName = '{pos_loc}')
@@ -54,7 +54,7 @@ ORDER BY CAST (PutAwayOrder AS INTEGER); '''
     WHAreaId IN (SELECT WHAreaId FROM COM_Location WHERE LocationName = '{pos_loc}')
     AND AisleId IN (SELECT AisleId FROM COM_Location WHERE LocationName = '{pos_loc}')
     AND Property7 != 'empty'
-    ORDER BY CAST (PickGoodsOrder AS INTEGER); '''
+    ORDER BY CAST (PickGoodsOrder AS INTEGER) DESC; '''
 
     # 空托垛卸货
     get_stack_empty_loc = '''SELECT TOP 1 LocationName FROM COM_Location WHERE 
@@ -70,7 +70,7 @@ ORDER BY CAST (PutAwayOrder AS INTEGER); '''
     AND AisleId IN (SELECT AisleId FROM COM_Location WHERE LocationName = '{pos_loc}')
     AND LLayer = 1
     AND Property7 != 'empty'
-    ORDER BY CAST (PickGoodsOrder AS INTEGER); '''
+    ORDER BY CAST (PickGoodsOrder AS INTEGER) DESC; '''
     
     get_empty_loc_in_trans = '''select LocationName from COM_Location WHERE LocationName in ('P1-01-01-01','P1-01-02-01') and Property7 = 'empty';'''
 
