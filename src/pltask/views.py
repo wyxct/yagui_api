@@ -68,6 +68,8 @@ class p2ptasks(Resource):
             task = PlTask()
             task.task_no = data["task_no"]
             task.task_type = data["task_type"]
+            task.source = data["source"] if "source" in data and data["source"] !='' else None
+            task.client_name = data["client_name"] if "client_name" in data and data["client_name"] !='' else None
             task.optlist = {"optlist":data["optlist"]}
             task.ex = None if "ex" not in data else json.dumps(data["ex"])
             task.status = "created" if "status" not in data else data["status"]
