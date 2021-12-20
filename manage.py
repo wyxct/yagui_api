@@ -2,7 +2,7 @@
 import json
 from src.app import create_app
 #from celery.schedules import crontab
-#from src.corntask.get import sched
+# from src.corntask.get import sched
 #from flask_script import Manager
 #from flask_apidoc.commands import GenerateApiDoc
 #from flask_apidoc import ApiDoc

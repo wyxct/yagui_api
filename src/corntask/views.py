@@ -21,7 +21,7 @@ class tasks(Resource):
         cron = value['obj'].cfg['corn'] if 'cron' not in data or data['cron'] is None else data['cron']
         job_id = sched.add_job(
             value['obj'].run, 'cron', cron, job_id=value['obj'].get_name())
-        return {'taskid': job_id}, 202
+        return {'taskid': job_id}, 404
     def search_task(self,src,dst:list):
         for row in dst:
             if src == row["id"]:

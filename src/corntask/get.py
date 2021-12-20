@@ -46,6 +46,7 @@ def add_task(func, corn):
     corn_str = corn
     strlist = corn_str.split(' ')
     lens = len(strlist)
+    print(func)
     if lens == 0:
         pass
     s = strlist[0] if lens >= 1 else 0
@@ -56,7 +57,7 @@ def add_task(func, corn):
     w = strlist[5] if lens >= 6 else '*'
     y = strlist[6] if lens >= 7 else '*'
     job = sched.add_job(func, 'cron', year=y, month=M, day=d,
-                        day_of_week='*', hour=h, minute=m, second=s)
+                        day_of_week='*', hour=h, minute=m, second=s,next_run_time = datetime.now())
     return job
 
 
@@ -72,7 +73,7 @@ def init():
 
 
 init()
-print(g_task_table)
+# print(g_task_table)
 
 if __name__ == '__main__':
     task_path = os.getcwd()+'/src/corntask/tasks/'
@@ -84,5 +85,5 @@ if __name__ == '__main__':
         value['obj'].run()
         job = add_task(value['obj'].run, value['obj'].cfg['corn'])
         g_task_table[key]['job'] = job
-        print(job.id)
+        # print(job.id)
     sched.start()

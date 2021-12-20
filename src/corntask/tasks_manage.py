@@ -1,6 +1,8 @@
 import os
 import importlib
 import sys
+from ..settings import server,Scheduler
+from .apscheduler_core import sched
 from ..base.gettask import g_task_table,gettask
 
 def listscript(path):  # 传入存储的list
@@ -18,30 +20,49 @@ def listscript(path):  # 传入存储的list
 
 
 
-def loadtask(listfile):
+def loadtask(listfile,project_no):
     if len(listfile) == 0:
         return
     for row in listfile:
-        mName = "src.corntask.tasks." + row
+        mName = f"src.corntask.tasks.{project_no}.{row}"
         #mName = "tasks." + row
         module = importlib.import_module(mName)
         gettask(module)
 
 
 def init():
-    task_path = os.getcwd()+'/src/corntask/tasks/'
-    list_file = listscript(task_path)
-    print(list_file)
-    loadtask(list_file)
+    general_path = os.getcwd()+'/src/corntask/tasks/General'
+    general_file = listscript(general_path)
+    loadtask(general_file,'General')
+    project_no = server.PROJECT_NO
+    project_file = []
+    if project_no != 'None':
+        project_path = os.getcwd()+'/src/corntask/tasks/{}'.format(project_no)
+        project_file = listscript(project_path)
+        loadtask(project_file,project_no)
+
 
 
 class task_man:
+    def init_selfboot(self):
+        selfboot = Scheduler.SELF_BOOT
+        for cron in selfboot:
+            task = g_task_table[cron]
+            CFG = task['obj']
+            cron = CFG.cfg
+            sched.add_job(task['obj'].run, 'cron', cron['cron'], job_id=task['obj'].get_name())
+            # print(sched.get_jobs())
 
     def reloadtask(self):
-        task_path = os.getcwd()+'/src/corntask/tasks/'
-        list_file = listscript(task_path)
-        print(list_file)
-        loadtask(list_file)
+        general_path = os.getcwd()+'/src/corntask/tasks/'
+        general_file = listscript(general_path)
+        loadtask(general_file,'General')
+        project_no = server.PROJECT_NO
+        project_file = []
+        if project_no != 'None':
+            project_path = os.getcwd() + '/src/corntask/tasks/{}'.format(project_no)
+            project_file = listscript(project_path)
+            loadtask(project_file, project_no)
         return g_task_table.keys()
 
     def taskslist(self):
@@ -49,12 +70,10 @@ class task_man:
 
 
 init()
-print(g_task_table)
 tm = task_man()
-
+tm.init_selfboot()
 
 if __name__ == '__main__':
-    task_path = os.getcwd()+'/src/corntask/tasks/'
+    task_path = os.getcwd()+'/src/corntask/tasks/General'
     list_file = listscript(task_path)
-    print(list_file)
     loadtask(list_file)

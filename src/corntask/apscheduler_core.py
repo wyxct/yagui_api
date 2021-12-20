@@ -88,7 +88,7 @@ class SchedulerManage(object):
         self.sch = sch
         self.jobstore = jobstore
 #        from ..app import create_app
-        from ..settings import Database
+        from ..settings import Database,Scheduler
         #self.engine = create_engine('postgresql://postgres:admin@127.0.0.1:5432/longji0628')
         self.engine = create_engine(Database.postgresql.DB_URI, echo=True)
         self.SessionFactory = sessionmaker(bind=self.engine)

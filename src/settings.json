@@ -3,10 +3,10 @@
     "server":{
         "PORT":"8501",
         "THREADED":false,
-        "project":"QLSH001"
+        "PROJECT_NO":"QLSH0001"
     },
     "scheduler":{
-        "SELF_BOOT" :["monitoring_order"] 
+        "SELF_BOOT" :["monitoring_order","A"]
     },
     "db":{
         "postgresql":{
