@@ -51,7 +51,7 @@ class task_man:
             CFG = task['obj']
             cron = CFG.cfg
             sched.add_job(task['obj'].run, 'cron', cron['cron'], job_id=task['obj'].get_name())
-            # print(sched.get_jobs())
+            print(sched.get_jobs())
 
     def reloadtask(self):
         general_path = os.getcwd()+'/src/corntask/tasks/'
