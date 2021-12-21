@@ -9,7 +9,6 @@ from flask.json import JSONEncoder as _JSONEncoder
 from flask_restful import Api
 from flask_restful.reqparse import text_type
 
-
 asyntask_bp = Blueprint('asyntask', __name__, url_prefix='/api/')
 api = Api(asyntask_bp, default_mediatype='application/json')
 
@@ -27,4 +26,5 @@ api.add_resource(reloadtask, 'tasks/reload/')
 api.add_resource(starttask, 'tasks/<string:taskid>/start/')
 #api.add_resource(stoptask, 'tasks/<string:taskid>/stop/')
 api.add_resource(resultstask, 'tasks/<string:taskid>/results/')
+api.add_resource(check_crontask, 'tasks/<string:project>/checkcrontask/')
 api.init_app(asyntask_bp)

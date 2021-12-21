@@ -1,9 +1,11 @@
+import os
+
 from flask import request, jsonify, url_for
 from flask_restful import Resource, reqparse, Api
+from ..settings import server
 import json
-from .tasks_manage import g_task_table, tm
+from .tasks_manage import g_task_table, tm, d_task_table
 from .apscheduler_core import sched
-
 
 class tasks(Resource):
     def __init__(self):
@@ -206,3 +208,26 @@ class resultstask(Resource):
         r = CronTaskResult.query.filter_by(job_name=taskid).all()
 
         return {"job_name": taskid, "results": []}, 200
+
+class check_crontask(Resource):
+    def __init__(self):
+        pass
+
+    def get(self,project):
+        # data = json.loads(request.data)
+        L=[]
+        if project != 'all':
+            for taskname,taskobj in d_task_table.items():
+                taskdetail = {}
+                if taskobj['obj'].cfg['PROJECT_NO'] == project:
+                    taskdetail['name'] = taskname
+                    taskdetail['PROJECT_NO'] = taskobj['obj'].cfg['PROJECT_NO']
+                    L.append(taskdetail)
+        else:
+            for taskname, taskobj in d_task_table.items():
+                taskdetail = {}
+                taskdetail['name'] = taskname
+                taskdetail['PROJECT_NO'] = taskobj['obj'].cfg['PROJECT_NO']
+                L.append(taskdetail)
+
+        return L,200

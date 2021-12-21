@@ -22,7 +22,6 @@ def listscript(path):  # 传入存储的list
 
 g_task_table = {}
 
-
 def gettask(module):
     print(inspect.getmembers(sys.modules[module.__name__], inspect.isclass))
     for name, class_ in inspect.getmembers(sys.modules[module.__name__], inspect.isclass):

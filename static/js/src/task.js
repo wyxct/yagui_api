@@ -232,7 +232,7 @@ function reloadtask() {
          }, {
                  field: 'trigger',
                  title: '触发方式'
-         }, 
+         },
          {
                  field: 'trigger_time',
                  title: '触发参数'
@@ -244,7 +244,7 @@ function reloadtask() {
         //{
         //         field: 'start_date',
         //        title: '开始时间'
-        //}, 
+        //},
          {
                  field: 'next_run_time',
                  title: '下次执行时间'
