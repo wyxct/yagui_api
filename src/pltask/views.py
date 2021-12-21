@@ -252,7 +252,7 @@ class p2ptasksgoon(Resource):
             return {'error': 'order 未创建'}, 400     
         
         try:       
-            sql = 'select * from layer4_1_om.interaction_info where interaction_info_type_id = 1 and info_status = \'active\' and interaction_info_name ={} order by interaction_info_id desc'.format(curorderno)        
+            sql = 'select * from layer4_1_om.interaction_info where interaction_info_type_id = 2 and info_status = \'active\' and interaction_info_name =\'{}\' order by interaction_info_id desc'.format(curorderno)        
             with sched.SessionFactory() as session:            
                 cursor = session.execute(sql)
                 ininfo = cursor.fetchall()
