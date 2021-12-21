@@ -14,7 +14,7 @@ class monitoring_order():
     def __init__(self):
         self.__name = monitoring_order.get_name()
         self.cfg = {'cron': '0/2 * * * * * *','desc':'order 执行情况监控',
-                    'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/','PROJECT_NO':'General'}
+                    'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/','PROJECT_NO':'General','desc':"order状态监控重发"}
 
     @staticmethod
     def get_name():
@@ -22,7 +22,7 @@ class monitoring_order():
 
     @staticmethod
     def get_cfg():
-        return {'cron': '0/2 * * * * * *', 'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/'}
+        return {'cron': '0/2 * * * * * *', 'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/','PROJECT_NO':'General','desc':"order状态监控重发"}
 
     def save_results(self, data):
         from ...base.models.public_model import CronTaskResult

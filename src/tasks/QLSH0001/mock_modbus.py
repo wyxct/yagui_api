@@ -13,7 +13,7 @@ class mock_modbus():
     def __init__(self):
         self.__name = mock_modbus.get_name()
         self.cfg = {'cron': '0/2 * * * * * *',
-                    'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/','PROJECT_NO':'General'}
+                    'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/','PROJECT_NO':'QLSH0001','desc':"模拟设备发送（测试）"}
 
     @staticmethod
     def get_name():
@@ -21,7 +21,7 @@ class mock_modbus():
 
     @staticmethod
     def get_cfg():
-        return {'cron': '0/2 * * * * * *', 'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/'}
+        return {'cron': '0/2 * * * * * *', 'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/','PROJECT_NO':'QLSH0001','desc':"模拟设备发送（测试）"}
 
     def save_results(self, data):
         from ...base.models.public_model import CronTaskResult

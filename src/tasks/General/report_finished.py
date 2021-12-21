@@ -14,7 +14,7 @@ class report_finished():
     def __init__(self):
         self.__name = report_finished.get_name()
         self.cfg = {'cron': '0/2 * * * * * *',
-                    'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/','PROJECT_NO':'General'}
+                    'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/','PROJECT_NO':'General','desc':'通用任务完成上报（内部wms）'}
 
     @staticmethod
     def get_name():
@@ -22,7 +22,7 @@ class report_finished():
 
     @staticmethod
     def get_cfg():
-        return {'cron': '0/2 * * * * * *', 'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/'}
+        return {'cron': '0/2 * * * * * *', 'disurl': 'http://127.0.0.1:2000/api/om/interaction_info/find_by_type/','desc':'通用任务完成上报（内部wms）'}
 
     def save_results(self, data):
         logger.error("异常{}".format(data["error"]))

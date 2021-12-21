@@ -62,10 +62,11 @@ class server(Config):
     PROJECT_NO = "None" if CFG is None or "PROJECT_NO" not in CFG else CFG["PROJECT_NO"]
     
 class Scheduler:
-    CFG = None if sinleCfg is None or "scheduler" not in sinleCfg else sinleCfg["server"]
+    CFG = None if sinleCfg is None or "scheduler" not in sinleCfg else sinleCfg["scheduler"]
     """App configuration."""
     SCHEDULER_API_ENABLED = False
-    SELF_BOOT =['monitoring_order'] if CFG is None or "SELF_BOOT" not in CFG else CFG["SELF_BOOT"]
+    SELF_BOOT =[] if CFG is None or "SELF_BOOT" not in CFG else CFG["SELF_BOOT"]
+    print(SELF_BOOT)
 
 class Logging:
     LOGGING = {

@@ -27,7 +27,7 @@ class assign_pos_loc():
                     'get_interaction_disurl':'{host}/api/p2ptasks/interaction/?info_status=active&type_id=[1,4,5]',
                     'update_dest_disurl': '{host}/api/p2ptasks/interaction/',
                     'get_slaver_info_disurl': '{host}/api/p2ptasks/accessibleloc/?loc_n=',
-                    'desc':"金红叶check点目的地分配策略",'PROJECT_NO':'General'}
+                    'desc':"金红叶check点目的地分配策略",'PROJECT_NO':'JHY0001'}
 
     @staticmethod
     def get_name():

@@ -79,7 +79,7 @@ class taskXJ_switching():
         self.__name = taskXJ_switching.get_name()
         self.cfg = {'cron': '0/2 * * * * * *',
                     'disurl': '{host}/api/p2ptasks/',
-                    'desc':"金红叶下架任务下发AGV",'PROJECT_NO':'General'}
+                    'desc':"金红叶下架任务下发AGV",'PROJECT_NO':'JHY0001'}
 
     @staticmethod
     def get_name():

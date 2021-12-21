@@ -47,7 +47,8 @@ class task_man:
     def init_selfboot(self):
         selfboot = Scheduler.SELF_BOOT
         for cron in selfboot:
-            task = g_task_table[cron]
+            if cron in g_task_table:
+                task = g_task_table[cron]
             CFG = task['obj']
             cron = CFG.cfg
             sched.add_job(task['obj'].run, 'cron', cron['cron'], job_id=task['obj'].get_name())
