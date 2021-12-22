@@ -1,10 +1,11 @@
+import importlib
 import os
 
 from flask import request, jsonify, url_for
 from flask_restful import Resource, reqparse, Api
 from ..settings import server
 import json
-from .tasks_manage import g_task_table, tm, d_task_table
+from .tasks_manage import g_task_table, tm, g_task_list
 from .apscheduler_core import sched
 
 class tasks(Resource):
@@ -36,13 +37,13 @@ class tasks(Resource):
         data = sched.get_jobs()
         d = json.loads(data)
 
-        for taskname,taskobj in g_task_table.items():           
+        for taskname,taskobj in g_task_table.items():
             idx = self.search_task(taskname,d)
             if idx != None:
                 d[idx]['desc'] = None if 'desc' not in taskobj['obj'].cfg else taskobj['obj'].cfg['desc']
                 pass
             else:
-                ntask = {          
+                ntask = {
                 'id':taskname,
                 'name':taskname,
                 'desc':None if 'desc' not in taskobj['obj'].cfg else taskobj['obj'].cfg['desc'],
@@ -53,10 +54,11 @@ class tasks(Resource):
                 'start_date':None,
                 'end_date':None,
                 'state':'未加载',
-                'next_run_time':None
+                'next_run_time':None,
+                'PROJECT_NO':None if 'PROJECT_NO' not in taskobj['obj'].cfg else taskobj['obj'].cfg['PROJECT_NO'],
                 }
                 d.append(ntask)
-            
+
         return d, 200
 
 
@@ -67,23 +69,25 @@ class reloadtask(Resource):
     def post(self):
 
         from ..base.models.public_model import  CronTask
-        data = list(tm.reloadtask())
+        # data = list(tm.reloadtask())
         try:
-            for row in data:
-                d = CronTask.query.filter_by(job_name=row).first()
-                if d:
-                    pass
-                else:
-                    
-                    use = CronTask(job_name=row, active_flag=True)
-                    with sched.SessionFactory() as session:      
-                        session.add(use)
-                        session.commit()
-                        session.flush()   
+            for taskname,taskobj in g_task_table.items():
+                module = taskobj['module']
+                importlib.reload(module)
+        # for row in data:
+        #     d = CronTask.query.filter_by(job_name=row).first()
+        #     if d:
+        #         pass
+        #     else:
+        #
+        #         use = CronTask(job_name=row, active_flag=True)
+        #         with sched.SessionFactory() as session:
+        #             session.add(use)
+        #             session.commit()
+        #             session.flush()
         except (Exception) as e:
-
             return {"error":"数据库记录失败"}, 200
-        return data, 200
+        return 0, 200
 
     def get(self):
         data = list(tm.taskslist())
@@ -147,9 +151,9 @@ class pausetask(Resource):
         flg,msg = sched.pause_job(taskid)
         if flg == True:
             job = sched.get_job(taskid)
-            job['desc'] = None if 'desc' not in value['obj'].cfg else value['obj'].cfg['desc'] 
+            job['desc'] = None if 'desc' not in value['obj'].cfg else value['obj'].cfg['desc']
         else:
-            return {'error':msg} 
+            return {'error':msg}
         return job, 200
 
 
@@ -171,9 +175,9 @@ class resumetask(Resource):
         flg,msg = sched.resume_job(taskid)
         if flg == True:
             job = sched.get_job(taskid)
-            job['desc'] = None if 'desc' not in value['obj'].cfg else value['obj'].cfg['desc'] 
+            job['desc'] = None if 'desc' not in value['obj'].cfg else value['obj'].cfg['desc']
         else:
-            return {'error':msg} 
+            return {'error':msg}
         return job, 200
 
 
@@ -217,14 +221,14 @@ class check_crontask(Resource):
         # data = json.loads(request.data)
         L=[]
         if project != 'all':
-            for taskname,taskobj in d_task_table.items():
+            for taskname,taskobj in g_task_list.items():
                 taskdetail = {}
                 if taskobj['obj'].cfg['PROJECT_NO'] == project:
                     taskdetail['name'] = taskname
                     taskdetail['PROJECT_NO'] = taskobj['obj'].cfg['PROJECT_NO']
                     L.append(taskdetail)
         else:
-            for taskname, taskobj in d_task_table.items():
+            for taskname, taskobj in g_task_list.items():
                 taskdetail = {}
                 taskdetail['name'] = taskname
                 taskdetail['PROJECT_NO'] = taskobj['obj'].cfg['PROJECT_NO']

@@ -19,7 +19,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("apscheduler")
 
 def datetime2str(dt):
     if dt:
@@ -330,10 +330,10 @@ class SchedulerManage(object):
             job_name = '{}_{}'.format(func.__name__, random_num)
         job_name = job_id
 
-        # prejob = self.get_job(job_id)
-        # if prejob is not None:
-        #     logger.info('创建-> 已存在任务，如果需要修改参数，请调用修改接口！')
-        #     return prejob["id"]
+        prejob = self.get_job(job_id)
+        if prejob is not None:
+            logger.info('创建-> 已存在任务，如果需要修改参数，请调用修改接口！')
+            return prejob["id"]
         add_kwargs = {'func': func, 'trigger': trigger, 'args': func_args,
                       'kwargs': func_kwargs, 'id': job_id, 'name': job_name}  # 指定添加作业的参数
         triggerptr = self.trigger_time2trigger_args(

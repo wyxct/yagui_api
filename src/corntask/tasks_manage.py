@@ -1,10 +1,12 @@
 import json
+import logging
 import os
 import importlib
 import sys
 from ..settings import server,Scheduler
 from .apscheduler_core import sched
-from ..base.gettask import g_task_table,gettask,d_task_table
+from ..base.gettask import g_task_table,gettask,g_task_list
+logger = logging.getLogger("apscheduler")
 
 def listscript(path):  # 传入存储的list
     list_name = []
@@ -15,6 +17,8 @@ def listscript(path):  # 传入存储的list
         else:
             if os.path.splitext(file)[1] == '.py':
                 list_name.append(os.path.splitext(file)[0])
+            else:
+                logger.error(f'{os.path.splitext(file)[0]}不是py格式文件')
     return list_name
 
 
@@ -54,7 +58,6 @@ class task_man:
             sched.add_job(task['obj'].run, 'cron', cron['cron'], job_id=task['obj'].get_name())
         exist_job = sched.get_jobs()
         exist_job = json.loads(exist_job)
-        print(exist_job)
         name = []
         for taskname,taskobj in g_task_table.items():
             name.append(taskname)
@@ -62,12 +65,10 @@ class task_man:
             if job['id'] not in selfboot:
                 sched.remove_job(job['id'])
 
-
-
     def reloadtask(self):
-        general_path = os.getcwd()+'/src/tasks/'
+        general_path = os.getcwd() + '/src/tasks/General'
         general_file = listscript(general_path)
-        loadtask(general_file,'General')
+        loadtask(general_file, 'General')
         project_no = server.PROJECT_NO
         project_file = []
         if project_no != 'None':
@@ -80,7 +81,7 @@ class task_man:
         return g_task_table.keys()
 
 
-init()
+module = init()
 tm = task_man()
 tm.init_selfboot()
 

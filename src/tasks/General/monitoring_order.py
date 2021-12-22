@@ -48,7 +48,7 @@ class monitoring_order():
         orderlist=[]
         taskdict = {}
         
-        logger.info("获取{}个任务".format(len(result)))
+        logger.info("获取{}个任务!".format(len(result)))
         for row in result:
             if row.relation is None:
                 with sched.SessionFactory() as session:

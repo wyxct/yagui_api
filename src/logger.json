@@ -20,7 +20,7 @@
         "file": {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./log/fs.log",
+            "filename": "./log/fs/fs.log",
             "when": "midnight",
             "formatter": "verbose",
             "interval": 1,
@@ -29,7 +29,7 @@
         "api": {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./log/api.log",
+            "filename": "./log/api/api.log",
             "when": "midnight",
             "formatter": "verbose",
             "interval": 1,
@@ -44,10 +44,10 @@
             "interval": 1,
             "backupCount": 30
         },
-        "src.corntask.apscheduler_core": {
+        "apscheduler": {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./log/apscheduler.log",
+            "filename": "./log/apscheduler/apscheduler.log",
             "when": "midnight",
             "formatter": "verbose",
             "interval": 1,
@@ -79,8 +79,8 @@
             "level": "DEBUG",
             "propagate": true
         },
-        "src.corntask.apscheduler_core": {
-            "handlers": ["console", "src.corntask.apscheduler_core","http"],
+        "apscheduler": {
+            "handlers": ["console", "apscheduler","http"],
             "level": "DEBUG",
             "propagate": true
         },
