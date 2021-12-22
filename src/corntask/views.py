@@ -1,4 +1,5 @@
 import importlib
+import logging
 import os
 
 from flask import request, jsonify, url_for
@@ -7,6 +8,7 @@ from ..settings import server
 import json
 from .tasks_manage import g_task_table, tm, g_task_list
 from .apscheduler_core import sched
+logger = logging.getLogger("aspcheduler")
 
 class tasks(Resource):
     def __init__(self):
@@ -86,7 +88,8 @@ class reloadtask(Resource):
         #             session.commit()
         #             session.flush()
         except (Exception) as e:
-            return {"error":"数据库记录失败"}, 200
+            logger.error(str(e))
+            return {"error":"重加载任务失败"}, 200
         return 0, 200
 
     def get(self):
