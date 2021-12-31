@@ -109,7 +109,9 @@ class taskSJ_switching():
                     "priority": None,
                     "status": None,
                     "ex": {"TaskType": "SJ"},
-                    "optlist": []
+                    "optlist": [],
+                    "source":"iwms",
+                    "client_name":self.__name
                 }
                 # 通过接口下发agv动作任务
                 current_taskSJ = resolve_taskSJ(current_task)
@@ -121,11 +123,22 @@ class taskSJ_switching():
                     logger.info('there is no FromLoc/ToLoc with order: ' + str(current_taskSJ.TaskId))
                     continue
 
+                # 0.去起点check点
+                from_check_point_sql = SQL.get_check_point.format(LocationName=current_taskSJ.FromLoc)
+                from_location_result = run_sql(from_check_point_sql)
+                if from_location_result == []:
+                    from_check_point = None
+                else:
+                    from_check_point = from_location_result[0][0]
+
                 # 1.去起点取货
-                prt_1 = {'pos': current_taskSJ.FromLoc, 'opt': 'load'}
+                if from_check_point == '' or from_check_point is None:
+                    prt_1 = {'pos': current_taskSJ.FromLoc, 'opt': 'load'}
+                else:
+                    prt_1 = {'pos': current_taskSJ.FromLoc, 'opt': 'load', 'check_point': from_check_point}
                 pltask_json["optlist"].append(prt_1)
 
-                # 2.去check点
+                # 2.去终点check点
                 check_point_sql = SQL.get_check_point.format(LocationName = current_taskSJ.ToLoc)
                 location_result = run_sql(check_point_sql)
                 if location_result == []:
@@ -140,6 +153,7 @@ class taskSJ_switching():
                     continue
                 area_id = area_result[0][0]
 
+                # 去终点卸货
                 if check_point == '' or check_point is None:
                     prt_2 = {'pos': current_taskSJ.ToLoc, 'opt': 'unload'}
                 else:

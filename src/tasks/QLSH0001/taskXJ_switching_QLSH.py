@@ -119,7 +119,9 @@ class taskXJ_switching_QLSH():
                     "priority": None,
                     "status": None,
                     "ex": {"TaskType": "XJ"},
-                    "optlist": []
+                    "optlist": [],
+                    "source":"iwms",
+                    "client_name":self.__name
                 }
                 # 1.通过接口下发agv动作任务
                 current_taskXJ = resolve_taskXJ(current_task)

@@ -43,7 +43,7 @@ class report_finished():
         from sqlalchemy import select,update,exists
 
         with sched.SessionFactory() as session:            
-            statement = select(PlTask.id,PlTask.task_no,PlTask.task_type,PlTask.status,PlTask.priority,PlTask.ex,PlTaskRelation.relation).filter(~exists().where(PlTaskReport.pl_task_id ==PlTask.id)).join(PlTaskRelation).filter(PlTask.status.in_(['completed']))
+            statement = select(PlTask.id,PlTask.task_no,PlTask.task_type,PlTask.status,PlTask.priority,PlTask.ex,PlTaskRelation.relation).filter(~exists().where(PlTaskReport.pl_task_id == PlTask.id),PlTask.source =='iwms').join(PlTaskRelation).filter(PlTask.status.in_(['completed']))
             result = session.execute(statement).all()
             session.commit()
         import json
@@ -72,7 +72,7 @@ class report_finished():
             completelist = []
             #处理未发送成功的
             pos = re.sub('\(.*?\)','',row.current_destination)
-            data ={"TaskId":row.order_name,"UserId":"agvsystem","ToLoc":pos,"ex":json.loads(taskdict[row.order_name].ex) if taskdict[row.order_name].ex is not None else None,"IP":"","ClientName":""}
+            data ={"TaskId":row.order_name,"UserId":"monitoring_order","ToLoc":pos,"ex":json.loads(taskdict[row.order_name].ex) if taskdict[row.order_name].ex is not None else None,"IP":"","ClientName":""}
             completelist.append(data)
   
             logger.info({"data":completelist})
