@@ -3,7 +3,7 @@ import time
 if __name__ == '__main__':
     pass
 else:
-    from ..apscheduler_core import sched
+    from ...corntask.apscheduler_core import sched
 
 import logging
 logger = logging.getLogger(__name__)

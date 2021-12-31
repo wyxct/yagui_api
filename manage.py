@@ -12,7 +12,8 @@ from flask_apidoc.commands import GenerateApiDoc
 from flask_apidoc import ApiDoc
 import os
 
-from flask import render_template
+from flask import render_template, current_app
+
 
 def run(model):
     args = 'flask-sqlacodegen --flask --schema {} --outfile ./src/base/models/{}_model.py postgresql://postgres:admin@127.0.0.1:5432/longji0628'.format(
@@ -30,18 +31,10 @@ if __name__ == '__main__':
     def adddemo():
         return render_template('task.html')
 
-    #manager.run()
-    path = os.getcwd()
-    # print(f'apidoc -i {path}/src/ -o {path}/static/apidoc -c {path}/apidoc.json')
-    # os.system(f'apidoc -i {path}/src/ -o {path}/static/apidoc -c {path}/apidoc.json')
-    command = GenerateApiDoc()
-    command.run()
-    # os.popen(f'apidoc -i {path}/src/ -o {path}/static/apidoc')
+    @app.route('/apidoc')
+    def apidoc():
+        return current_app.send_static_file('index.html')
 
-    # manager = Manager(app)
-    # manager.add_command('apidoc', GenerateApiDoc())
-    # manager.run()
     from src.settings import server
     app.run(host='0.0.0.0', port=server.PORT, debug=False, threaded=server.THREADED)
-    #app.run(host='0.0.0.0', port=8000, debug=False, threaded=False)
 
