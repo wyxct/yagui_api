@@ -4,16 +4,19 @@ import json
 from ..settings import orderserver
 from  ..corntask.apscheduler_core import sched
 import logging
+from flask import Flask
+from flask_apidoc import ApiDoc
 logger = logging.getLogger('api')
 
 from datetime import datetime
-
+app = Flask(__name__)
+doc = ApiDoc(app = app)
 
 
 class p2ptasks(Resource):
     def __init__(self):
-        pass   
-    
+        pass
+
     '''
     @api {post} /api/v1/p2ptasks/ 点任务
     @apiVersion 0.0.0
@@ -23,7 +26,7 @@ class p2ptasks(Resource):
 
     def post(self):
         from ..base.models.layer2_pallet_model import PlTask,PlTaskType,PlTaskRelation
-         
+
         from sqlalchemy import select,exists
 
         #waiting/active/finish/e
@@ -35,31 +38,31 @@ class p2ptasks(Resource):
 
         if "task_no" not in data or "task_type" not in data or "optlist" not in data:
             return {"error":"缺少字段必要字段，检查task_no，task_type，optlist"}, 400
-       
+
         try:
-            with sched.SessionFactory() as session:      
-                statement = select(PlTaskType.task_type,PlTaskType.ts_map).filter_by(task_type = data["task_type"])      
+            with sched.SessionFactory() as session:
+                statement = select(PlTaskType.task_type,PlTaskType.ts_map).filter_by(task_type = data["task_type"])
                 tasktsmap = session.execute(statement).all()
-                session.commit()     
+                session.commit()
 
 
             if tasktsmap is None:
                 return {"error":"不存在的类型"}, 400
-        
+
             #t = PlTask.query.filter_by(task_no=data["task_no"]).first()
-            with sched.SessionFactory() as session:      
-                statement = select(PlTask.id).filter_by(task_no=data["task_no"])      
+            with sched.SessionFactory() as session:
+                statement = select(PlTask.id).filter_by(task_no=data["task_no"])
                 t = session.execute(statement).first()
                 statement2 = select(PlTask.id,PlTaskRelation.relation).filter_by(task_no=data["task_no"]).outerjoin(PlTaskRelation)
                 d = session.execute(statement2).first()
-                session.commit()     
+                session.commit()
         except (Exception) as e:
             logger.error(str(e))
             return {"error":"数据库异常，请联系相关人员"},500
 
-        
+
         if t is not None:
-      
+
             if d is None:
                 return {'error': 'om 异常无法生成order'}, 200
             return {'task_no': data["task_no"]}, 200
@@ -72,10 +75,10 @@ class p2ptasks(Resource):
             task.ex = None if "ex" not in data else json.dumps(data["ex"])
             task.status = "created" if "status" not in data else data["status"]
             task.priority = 0 if "priority" not in data else data["priority"]
-            with sched.SessionFactory() as session:      
+            with sched.SessionFactory() as session:
                 session.add(task)
                 session.commit()
-                session.flush()   
+                session.flush()
 
         except (Exception) as e:
             logger.error(str(e))
@@ -84,10 +87,10 @@ class p2ptasks(Resource):
         optdict = {}
         idx = 0
         for row in data["optlist"]:
-            idx = idx + 1 
+            idx = idx + 1
             optdict[str(idx)] = row
 
-  
+
         order_json = {
         "task_no": data["task_no"],
         "priority": data["priority"] if "priority" in data  else 0,
@@ -99,21 +102,21 @@ class p2ptasks(Resource):
         from ..base.dispatchapi import sendorder
 
         redata,recode = sendorder(order_json)
- 
+
         if recode == 200:
             #order_id = json.loads(response.text)["data"]
             if task.id is not None:
                 try:
                     pltaskr = PlTaskRelation(relation = data["task_no"],pl_task_id = task.id)
-                    with sched.SessionFactory() as session:      
+                    with sched.SessionFactory() as session:
                         session.add(pltaskr)
                         session.commit()
-                        session.flush()   
+                        session.flush()
 
                 except (Exception) as e:
                     logger.error(str(e))
                     pass
-                
+
 
             return {'task_no': data["task_no"]}, 200
         else:
@@ -123,8 +126,8 @@ class p2ptasks(Resource):
 
 class p2ptasksInteractio(Resource):
     def __init__(self):
-        pass   
-    
+        pass
+
     '''
     @api {get} /api/v1/p2ptasks/interaction/ 查询交互信息
     @apiVersion 0.0.0
@@ -132,9 +135,9 @@ class p2ptasksInteractio(Resource):
     @apiGroup p2ptasks
     '''
     def get(self):
-         
-        type_id = request.args.get("type_id") 
-        info_status = request.args.get("info_status") 
+
+        type_id = request.args.get("type_id")
+        info_status = request.args.get("info_status")
         if type_id is  None or info_status is  None:
             return {"error":"缺少字段必要字段，检查info_status，type_id"}, 400
 
@@ -147,18 +150,18 @@ class p2ptasksInteractio(Resource):
         sql = 'select * from layer4_1_om.interaction_info where interaction_info_type_id in ({}) and info_status = \'{}\'  order by interaction_info_id '.format(type_id,info_status)
 
         try:
-            with sched.SessionFactory() as session:            
+            with sched.SessionFactory() as session:
                 cursor = session.execute(sql)
                 orderinfo = cursor.fetchall()
                 session.commit()
         except (Exception) as e:
-            logger.error(str(e))           
+            logger.error(str(e))
             return {"error":"数据库异常，请联系相关人员"},500
 
         data = [dict(zip(ininfo.keys(),ininfo)) for ininfo in orderinfo]
         return {"data":data},200
 
-    
+
     def post(self):
 
         try:
@@ -168,7 +171,7 @@ class p2ptasksInteractio(Resource):
             return {"error":"格式错误，非json格式"}, 400
         if "interaction_info_id" not in data or "info_status" not in data or "return_value" not in data:
             return {"error":"缺少字段必要字段，检查interaction_info_id，info_status，"}, 400
-            
+
         import requests
         headers = {
         'Content-Type': "application/json",
@@ -180,13 +183,13 @@ class p2ptasksInteractio(Resource):
         "info_status":data['info_status'],
         "return_value": data['return_value']
         }
-        
+
         try:
             response = requests.request("POST", orderserver.C_URI, json=tsdata, headers=headers)
         except (Exception) as e:
             print(e)
             return {"error":str(e)}, 400
-     
+
 
         print(response.status_code)
         print(response.text)
@@ -197,8 +200,8 @@ class p2ptasksInteractio(Resource):
 
 class p2ptasksgoon(Resource):
     def __init__(self):
-        pass   
-    
+        pass
+
     '''
     @api {get} /api/v1/p2ptasks/p2ptasksgoon/ 任务继续
     @apiVersion 0.0.0
@@ -226,48 +229,48 @@ class p2ptasksgoon(Resource):
             return {"error":"格式错误，非json格式"}, 400
         if "task_no" not in data or 'info_status' not in data:
             return {"error":"缺少字段必要字段，检查task_no是否存在"}, 400
-        
-        try:       
+
+        try:
             from ..base.models.layer2_pallet_model import PlTask,PlTaskRelation
             from sqlalchemy import select,exists
-             
-            with sched.SessionFactory() as session:            
+
+            with sched.SessionFactory() as session:
                 statement = select(PlTask.task_no,PlTask.status,PlTask.ex,PlTaskRelation.relation).filter_by(task_no=data["task_no"]).join(PlTaskRelation.pl_task)
                 result = session.execute(statement).all()
-                session.commit()  
-        
+                session.commit()
+
         except (Exception) as e:
-            logger.error(str(e))           
+            logger.error(str(e))
             return {"error":"数据库异常，请联系相关人员"},500
 
         curorderno= None
         if result is None:
             return {'error': '任务不存在'}, 400
-        for row in result:  
+        for row in result:
             curorderno = row.task_no
             break
         if curorderno is None:
-            return {'error': 'order 未创建'}, 400     
-        
-        try:       
-            sql = 'select * from layer4_1_om.interaction_info where interaction_info_type_id = 1 and info_status = \'active\' and interaction_info_name ={} order by interaction_info_id desc'.format(curorderno)        
-            with sched.SessionFactory() as session:            
+            return {'error': 'order 未创建'}, 400
+
+        try:
+            sql = 'select * from layer4_1_om.interaction_info where interaction_info_type_id = 1 and info_status = \'active\' and interaction_info_name ={} order by interaction_info_id desc'.format(curorderno)
+            with sched.SessionFactory() as session:
                 cursor = session.execute(sql)
                 ininfo = cursor.fetchall()
                 session.commit()
         except (Exception) as e:
-            logger.error(str(e))           
+            logger.error(str(e))
             return {"error":"数据库异常，请联系相关人员"},500
 
         cur_in = None
         for row in ininfo:
             cur_in = row.interaction_info_id
             break
-            
+
         if cur_in is None:
                 return {"error":'没有生成交互,或者已经完成'}, 400
-        
-                
+
+
         import requests
         headers = {
         'Content-Type': "application/json",
@@ -279,13 +282,13 @@ class p2ptasksgoon(Resource):
         "info_status":data['info_status'],
         "return_value": 'done'
         }
-        
+
         try:
             response = requests.request("POST", orderserver.C_URI, json=tsdata, headers=headers)
         except (Exception) as e:
             print(e)
             return {"error":str(e)}, 400
-     
+
 
 
         print(response.status_code)
@@ -295,16 +298,16 @@ class p2ptasksgoon(Resource):
 
 
 
-  
+
 class accessiblelocation(Resource):
     def __init__(self):
-        pass   
+        pass
     #如果是区域，需要重新建立映射关系
     def get(self):
         from ..modbus import get_data_sync
         from ..settings import modbus_cfg
         dev_no = "outloc"
-        loc_n = request.args.get("loc_n") 
+        loc_n = request.args.get("loc_n")
 
         if loc_n is  None or loc_n =='':
             return {"error":"loc_n 不存在"}, 400
@@ -314,7 +317,7 @@ class accessiblelocation(Resource):
         keymap ={}
         if modbus_cfg is None or dev_no not in modbus_cfg or "addrs" not in modbus_cfg[dev_no]or len(modbus_cfg[dev_no]["addrs"]) ==0:
             return {"error":"配置文件错误，缺少outloc或者outloc.addrs配置"},500
-        
+
         addr_list =[]
         for row in loc_list:
             if row not in modbus_cfg[dev_no]["addrs"].keys():
@@ -341,17 +344,148 @@ class Node(object):
     # 初始化一个节点
     def __init__(self,name = None):
         self.name = name  # 节点名称
-        self.l = None  
+        self.l = None
         self.child_list = []    # 子节点列表
 
     def add_child(self,node):
         self.child_list.append(node)
     def del_child(self):
-        self.child_list=[]  
+        self.child_list=[]
     def set_parent(self,node):
         self.l =  node
 
 class tasktracebackdetail(Resource):
+    """
+            @api {GET} /api/p2ptasks/tasktraceback/{taskid} 查看Agv链路细节
+            @apiVersion 1.0.0
+            @apiName Agv_Links
+            @apiGroup pltask
+            @apiDescription 用于查看Agv运行到什么程度下了，便于查问题
+
+            @apiSuccess {Object} status 状态码
+            @apiSuccess {Object} process 走过的链路
+            @apiSuccess {Object} info 订单细节
+            @apiSuccess {Object} map 完整的链路
+            @apiSuccessExample {Json} 成功返回:
+                HTTP 1.1/ 200K
+                {
+                "process": [
+                    "13",
+                    "12",
+                    "11",
+                    "10",
+                    "9",
+                    "8",
+                    "7",
+                    "6",
+                    "5",
+                    "4",
+                    "2",
+                    "1",
+                    "0"
+                ],
+                "info": {
+                    "order_name": "TSJ11111211021000100992",
+                    "agv_list": [
+                        2
+                    ],
+                    "ts_id": "multi_point_task",
+                    "status": "finish",
+                    "current_destination": "RA-01-01-01(1)",
+                    "current_operation": "1",
+                    "current_omi": "goto_location(RA-01-01-01,True)",
+                    "create_time": "2021-11-12 16:48:09.620617+08",
+                    "active_time": "2021-11-12 16:48:10.987838+08",
+                    "finished_time": "2021-11-12 17:09:19.988596+08",
+                    "cancel_time": null,
+                    "error_code": null,
+                    "process": "13"
+                },
+                "map": [
+                    {
+                        "id": "0",
+                        "label": "订单未下发",
+                        "l": "-1"
+                    },
+                    {
+                        "id": "1",
+                        "label": "订单已接收",
+                        "l": "0"
+                    },
+                    {
+                        "id": "2",
+                        "label": "订单已下发",
+                        "l": "1"
+                    },
+                    {
+                        "id": "3",
+                        "label": "订单下发失败正在重发",
+                        "l": "1"
+                    },
+                    {
+                        "id": "4",
+                        "label": "调度已分派车辆",
+                        "l": "2"
+                    },
+                    {
+                        "id": "5",
+                        "label": "AGV开始执行",
+                        "l": "4"
+                    },
+                    {
+                        "id": "6",
+                        "label": "AGV已经生成前往取货点S1-04-01-01的任务",
+                        "l": "5"
+                    },
+                    {
+                        "id": "7",
+                        "label": "AGV正在前往取货点S1-04-01-01",
+                        "l": "6"
+                    },
+                    {
+                        "id": "8",
+                        "label": "AGV已经生成前往货区LC-02-01-01的任务",
+                        "l": "7"
+                    },
+                    {
+                        "id": "9",
+                        "label": "AGV正在前往货区LC-02-01-01",
+                        "l": "8"
+                    },
+                    {
+                        "id": "10",
+                        "label": "AGV已经生成前往卸货点RA-01-01-01的任务",
+                        "l": "9"
+                    },
+                    {
+                        "id": "11",
+                        "label": "AGV正在前往卸货点RA-01-01-01",
+                        "l": "10"
+                    },
+                    {
+                        "id": "12",
+                        "label": "AGV执行任务完成等待数据同步",
+                        "l": "11"
+                    },
+                    {
+                        "id": "13",
+                        "label": "任务完成等待上报WMS",
+                        "l": "12"
+                    },
+                    {
+                        "id": "14",
+                        "label": "任务上报完成",
+                        "l": "13"
+                    }
+                ]
+            }
+
+            @apiErrorExample Response-Fail:
+                HTTP 1.1/ 404K
+                {
+                    'msg': 'Fail'
+                }
+            """
     def __init__(self):
         self.aprocess = [{'id': '0', 'label': '订单未下发', 'l': '-1'},
                          {'id': '1', 'label': '订单已接收', 'l': '0'},

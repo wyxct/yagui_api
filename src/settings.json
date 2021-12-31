@@ -6,7 +6,7 @@
         "PROJECT_NO":"QLSH0001"
     },
     "scheduler":{
-        "SELF_BOOT" :["monitoring_order","A"]
+        "SELF_BOOT" :[]
     },
     "db":{
         "postgresql":{
