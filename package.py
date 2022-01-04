@@ -23,9 +23,12 @@ def package_program():
         shutil.rmtree('manage')
         print("remove manage dir successfully")
     os.system("pyinstaller manage.py  --distpath ./  -y --clean")
+    os.system("apidoc -i src/ -o static/ -S")
     #shutil.move("dist/main.exe", "dist/server.exe")
     print("compile file successfully")
 
+    print("copy apidoc template")
+    shutil.copytree("template","manage/template")
     print("copy config file")
     shutil.copytree("src", "manage/src")
     print("copy static file")
